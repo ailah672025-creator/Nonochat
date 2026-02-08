@@ -10,18 +10,34 @@
         :root { --p: #6c5ce7; --bg: #0f0c29; --card-bg: rgba(255, 255, 255, 0.08); }
         .theme-green { --p: #2ecc71; --bg: #0a1f14; }
         .theme-gold { --p: #f1c40f; --bg: #1c1c1c; }
+
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; text-align: center; padding: 20px; margin: 0; transition: 0.5s; overflow-x: hidden; }
-        .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 22px; cursor: pointer; z-index: 1001; background: var(--p); width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+        
+        /* القائمة الجانبية وتغيير الألوان */
+        .menu-btn { position: fixed; top: 20px; right: 20px; font-size: 22px; cursor: pointer; z-index: 1001; background: var(--p); width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         .side-menu { position: fixed; top: 0; right: -280px; width: 260px; height: 100%; background: #1a1a2e; z-index: 1000; transition: 0.4s; padding: 25px; text-align: right; box-shadow: -5px 0 25px rgba(0,0,0,0.7); }
         .side-menu.active { right: 0; }
         .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:999; backdrop-filter: blur(3px); }
-        .card { background: var(--card-bg); backdrop-filter: blur(15px); border-radius: 25px; padding: 25px; max-width: 480px; margin: 20px auto; border: 1px solid rgba(255,255,255,0.1); }
-        .post-card { border-radius: 20px; padding: 18px; margin-top: 20px; text-align: right; background: rgba(255,255,255,0.05); border-right: 5px solid var(--p); }
-        .binary-box { background: #000; font-family: monospace; padding: 15px; border-radius: 12px; color: #00ff41; word-break: break-all; border: 1px solid #00ff41; text-shadow: 0 0 8px #00ff41; }
-        input, textarea { width: 100%; padding: 14px; margin: 10px 0; border-radius: 15px; border: none; outline: none; background: white; color: #333; font-family: 'Cairo'; }
+        
+        .color-option { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: none; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; }
+        .color-option:hover { transform: scale(1.05); }
+
+        .card { background: var(--card-bg); backdrop-filter: blur(15px); border-radius: 25px; padding: 25px; max-width: 480px; margin: 20px auto; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        .app-logo { width: 90px; height: 90px; border-radius: 22px; border: 3px solid var(--p); margin-bottom: 15px; filter: drop-shadow(0 0 10px var(--p)); }
+        
+        .post-card { border-radius: 20px; padding: 18px; margin-top: 20px; text-align: right; position: relative; color: white; background: rgba(255,255,255,0.05); border-right: 5px solid var(--p); }
+
+        /* ستايل الباينري المطور (أخضر ومهتز قليلاً للهيبة التقنية) */
+        .binary-box { background: #000; font-family: 'Courier New', monospace; padding: 15px; border-radius: 12px; font-size: 13px; margin: 10px 0; color: #00ff41; word-break: break-all; border: 1px solid #00ff41; text-shadow: 0 0 8px #00ff41; box-shadow: inset 0 0 10px rgba(0, 255, 65, 0.2); }
+        
+        .reactions { display: flex; gap: 10px; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 6px 15px; border-radius: 30px; width: fit-content; }
+        .react-btn { background: none; border: none; cursor: pointer; font-size: 18px; transition: 0.2s; color: white; }
+
+        input, textarea { width: 100%; padding: 14px; margin: 10px 0; border-radius: 15px; border: none; outline: none; box-sizing: border-box; font-family: 'Cairo'; background: white; color: #333; }
         button { width: 100%; padding: 14px; border-radius: 15px; border: none; background: var(--p); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+
         .footer { margin-top: 40px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 14px; color: #ccc; }
-        .eng-sub { display: block; font-size: 11px; color: var(--p); margin-top: 4px; }
+        .eng-sub { display: block; font-size: 11px; color: var(--p); margin-top: 4px; font-weight: normal; letter-spacing: 0.5px; }
     </style>
 </head>
 <body id="mainBody">
@@ -30,40 +46,37 @@
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
     <div class="side-menu" id="sideMenu">
-        <h3>تغيير الثيم 🎨</h3>
-        <button onclick="changeTheme('default')" style="background:#6c5ce7; margin-bottom:5px;">بنفسجي</button>
-        <button onclick="changeTheme('green')" style="background:#2ecc71; margin-bottom:5px;">أخضر</button>
-        <button onclick="changeTheme('gold')" style="background:#f1c40f; color:#333; margin-bottom:5px;">ذهبي</button>
+        <h3 style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">إعدادات المظهر 🎨</h3>
+        <button class="color-option" style="background:#6c5ce7;" onclick="changeTheme('default')">البنفسجي (نونو)</button>
+        <button class="color-option" style="background:#2ecc71;" onclick="changeTheme('green')">الأخضر التقني</button>
+        <button class="color-option" style="background:#f1c40f; color:#333;" onclick="changeTheme('gold')">الذهبي الفخم</button>
+        <hr style="opacity:0.1; margin:20px 0;">
+        <button onclick="shareApp()" style="background:#25d366; border-radius:10px;">نشر عبر واتساب 📱</button>
     </div>
 
     <div class="card">
+        <img src="https://raw.githubusercontent.com/noorabdelhalim77-rgb/NonoChat-/main/logo.png" class="app-logo">
         <h1>NonoSecret 🔒</h1>
         
-        <div id="sendArea" style="display:none; background:rgba(255,255,255,0.05); padding:15px; border-radius:15px; margin-bottom:20px;">
-            <p id="targetName" style="color:var(--p); font-weight:bold;"></p>
-            <textarea id="msgTxt" placeholder="اكتب صراحتك السرية هنا..."></textarea>
-            <button onclick="sendMsg()" style="background:#2ecc71;">إرسال رسالة سرية 🚀</button>
-        </div>
-
-        <div id="inboxArea" style="display:none; background:rgba(255,255,255,0.05); padding:15px; border-radius:15px;">
-            <h3>صندوق رسائلك 📥</h3>
-            <div id="authBox">
-                <input type="password" id="checkPass" placeholder="أدخل كلمة السر لفتح الرسائل">
-                <button onclick="unlockInbox()">فتح الصندوق</button>
+        <div id="publishArea">
+            <textarea id="postTxt" placeholder="بماذا تفكر؟"></textarea>
+            <div style="text-align:right; font-size:13px; margin-bottom:12px;">
+                <label style="cursor:pointer;"><input type="checkbox" id="binMode"> 🔢 تشفير باينري (Matrix Green)</label><br>
+                <label style="cursor:pointer;"><input type="checkbox" id="anonCheck"> 🤐 نشر بهوية مجهولة</label>
             </div>
-            <div id="msgList" style="display:none; margin-top:15px; text-align:right;"></div>
+            <button onclick="publishPost()" style="background:#2ecc71;">نشر للجميع ✨</button>
         </div>
 
-        <hr style="opacity:0.1; margin:20px 0;">
+        <div id="postsList"></div>
 
-        <div id="setup">
-            <h3>أنشئ رابطك الخاص ✨</h3>
+        <div id="setup" style="margin-top:30px; border-top:1px solid rgba(255,255,255,0.1); padding-top:20px;">
+            <h3>أنشئ صندوقك الخاص ✨</h3>
             <input type="text" id="uName" placeholder="اسمك">
-            <input type="password" id="uPass" placeholder="كلمة سر للصندوق">
-            <button onclick="reg()">تفعيل الرابط الخاص بي</button>
+            <input type="password" id="uPass" placeholder="كلمة السر">
+            <button onclick="reg()">تفعيل الرابط</button>
             <div id="linkBox" style="display:none; background:#fff; color:#333; padding:15px; border-radius:15px; margin-top:15px;">
                 <span id="theLink" style="font-size:11px; word-break:break-all;"></span>
-                <button onclick="copyLink()" style="background:#2d3436; margin-top:5px;">نسخ الرابط 📋</button>
+                <button style="background:#2d3436; margin-top:5px;" onclick="copyLink()">نسخ الرابط 📋</button>
             </div>
         </div>
 
@@ -86,79 +99,63 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        let currentU = new URLSearchParams(window.location.search).get('u');
 
+        function textToBinary(t) { return t.split('').map(c => c.charCodeAt(0).toString(2).padStart(8,'0')).join(' '); }
+        function binaryToText(b) { return b.split(' ').map(s => String.fromCharCode(parseInt(s, 2))).join(''); }
         function toggleMenu() { document.getElementById('sideMenu').classList.toggle('active'); document.getElementById('overlay').style.display = (document.getElementById('overlay').style.display === 'block') ? 'none' : 'block'; }
-        function changeTheme(t) { document.body.className = (t === 'default') ? '' : 'theme-' + t; toggleMenu(); }
+        
+        function changeTheme(theme) {
+            document.body.className = '';
+            if(theme !== 'default') document.body.classList.add('theme-' + theme);
+            toggleMenu();
+        }
 
-        // إنشاء حساب جديد بـ ID فريد
+        function publishPost() {
+            let txt = document.getElementById('postTxt').value;
+            if(!txt) return alert('اكتب شيئاً أولاً!');
+            let isBin = document.getElementById('binMode').checked;
+            db.ref('threads').push({
+                user: document.getElementById('anonCheck').checked ? "مجهول" : (document.getElementById('uName').value || "مستخدم"),
+                content: isBin ? textToBinary(txt) : txt,
+                isBin: isBin,
+                reactions: { heart:0, fire:0 },
+                time: Date.now()
+            });
+            document.getElementById('postTxt').value = "";
+        }
+
+        db.ref('threads').limitToLast(15).on('value', (s) => {
+            let h = "";
+            s.forEach((c) => {
+                let d = c.val();
+                let pid = c.key;
+                let content = d.isBin ? `<div class="binary-box">${d.content}</div><button onclick="alert('النص الأصلي: ${binaryToText(d.content)}')" style="width:auto; padding:2px 10px; font-size:10px; background:rgba(0,0,0,0.4); color:#00ff41; border:1px solid #00ff41;">إظهار النص 🔓</button>` : d.content;
+                
+                h = `<div class="post-card">
+                    <b>👤 ${d.user}</b>
+                    <p>${content}</p>
+                    <div class="reactions">
+                        <button class="react-btn" onclick="react('${pid}','heart')">❤️ ${d.reactions?.heart || 0}</button>
+                        <button class="react-btn" onclick="react('${pid}','fire')">🔥 ${d.reactions?.fire || 0}</button>
+                    </div>
+                </div>` + h;
+            });
+            document.getElementById('postsList').innerHTML = h;
+        });
+
+        function react(id, type) { db.ref('threads/'+id+'/reactions/'+type).transaction(c => (c || 0) + 1); }
+        
         function reg() {
-            let n = document.getElementById('uName').value;
-            let p = document.getElementById('uPass').value;
-            if(!n || !p) return alert('أكمل البيانات!');
-            
-            // ID فريد جداً يعتمد على الوقت واسم المستخدم
-            let id = btoa(n + Math.random()).substring(0, 12).replace(/[/+=]/g, '0');
-            
-            db.ref('users/' + id).set({
-                name: n,
-                pass: p,
-                createdAt: Date.now()
-            }).then(() => {
-                let link = window.location.origin + window.location.pathname + '?u=' + id;
-                document.getElementById('theLink').innerText = link;
+            let n = document.getElementById('uName').value; let p = document.getElementById('uPass').value;
+            if(!n || !p) return alert('أكمل البيانات');
+            let id = encodeURIComponent(n) + '_' + Math.floor(Math.random() * 999);
+            db.ref('box/' + id + '/config').set({ password: p }).then(() => {
+                document.getElementById('theLink').innerText = window.location.origin + window.location.pathname + '?u=' + id;
                 document.getElementById('linkBox').style.display = 'block';
             });
         }
-
-        // التعامل مع اللينك المفتوح
-        if(currentU) {
-            document.getElementById('sendArea').style.display = 'block';
-            document.getElementById('inboxArea').style.display = 'block';
-            
-            db.ref('users/' + currentU + '/name').once('value').then(s => {
-                if(s.exists()) {
-                    document.getElementById('targetName').innerText = "أرسل رسالة سرية لـ " + s.val();
-                }
-            });
-        }
-
-        function sendMsg() {
-            let m = document.getElementById('msgTxt').value;
-            if(!m) return alert('اكتب رسالة!');
-            db.ref('users/' + currentU + '/messages').push({
-                text: m,
-                time: Date.now()
-            }).then(() => {
-                alert('تم الإرسال بنجاح! 🚀');
-                document.getElementById('msgTxt').value = "";
-            });
-        }
-
-        function unlockInbox() {
-            let p = document.getElementById('checkPass').value;
-            db.ref('users/' + currentU + '/pass').once('value').then(s => {
-                if(s.val() === p) {
-                    document.getElementById('authBox').style.display = 'none';
-                    document.getElementById('msgList').style.display = 'block';
-                    loadMessages();
-                } else {
-                    alert('الباسورد غلط!');
-                }
-            });
-        }
-
-        function loadMessages() {
-            db.ref('users/' + currentU + '/messages').on('value', s => {
-                let h = "";
-                s.forEach(m => {
-                    h = `<div style="background:rgba(255,255,255,0.1); padding:10px; margin-bottom:5px; border-radius:10px;">${m.val().text}</div>` + h;
-                });
-                document.getElementById('msgList').innerHTML = h || "لا توجد رسائل بعد";
-            });
-        }
-
         function copyLink() { navigator.clipboard.writeText(document.getElementById('theLink').innerText); alert('تم النسخ! 📋'); }
+        function shareApp() { window.open(`https://wa.me/?text=صارحني بسر دون أن أعرفك! ✨ %0A ${window.location.href}`); }
     </script>
 </body>
 </html>
