@@ -7,14 +7,17 @@
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/noorabdelhalim77-rgb/NonoChat-/main/logo.png">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --p: #6c5ce7; --bg: #0f0c29; --card-bg: rgba(255, 255, 255, 0.08); }
+        :root { --p: #6c5ce7; --bg: #0f0c29; --card-bg: rgba(255, 255, 255, 0.08); --heart: #ff7675; }
         body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; text-align: center; padding: 20px; margin: 0; }
         .card { background: var(--card-bg); backdrop-filter: blur(12px); border-radius: 25px; padding: 20px; max-width: 480px; margin: 15px auto; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .app-logo { width: 85px; height: 85px; border-radius: 20px; border: 2px solid var(--p); margin-bottom: 10px; }
         button { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--p); color: white; font-weight: bold; cursor: pointer; margin-top: 8px; transition: 0.3s; }
+        button:active { transform: scale(0.98); opacity: 0.9; }
         input, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 12px; border: none; outline: none; box-sizing: border-box; background: rgba(255,255,255,0.95); color: #333; font-family: 'Cairo'; }
-        .post-card { background: rgba(255,255,255,0.06); border-radius: 18px; padding: 18px; margin-top: 15px; text-align: right; border-left: 5px solid #2ecc71; }
+        .post-card { background: rgba(255,255,255,0.06); border-radius: 18px; padding: 18px; margin-top: 15px; text-align: right; border-left: 5px solid #2ecc71; position: relative; }
         .comment-box { background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px; margin-top: 8px; font-size: 13px; border-right: 3px solid var(--p); }
+        .like-btn { background: none; border: 1px solid var(--heart); color: var(--heart); width: auto; padding: 4px 12px; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; margin-top: 10px; }
+        .like-btn:hover { background: var(--heart); color: white; }
         .footer { margin-top: 30px; padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: #888; }
     </style>
 </head>
@@ -65,7 +68,7 @@
         <div class="footer">
             <p>جميع الحقوق محفوظة © 2026</p>
             <p>تم التطوير بواسطة <span style="color: #6c5ce7; font-weight: bold;">المهندسة نور ⚙️👩‍🔧</span></p>
-            <p style="font-size: 10px; margin-top: 5px;">Mechatronics Engineering student | Sphinx University</p>
+            <p style="font-size: 10px; margin-top: 5px;">Mechatronics Engineering Student</p>
         </div>
     </div>
 
@@ -109,7 +112,7 @@
             let isAnon = document.getElementById('anonCheck').checked;
             let name = isAnon ? "مجهول" : (document.getElementById('uName').value || "مستخدم");
             if(!txt) return alert('اكتب شيئاً!');
-            db.ref('threads').push({ user: name, content: txt, time: new Date().toLocaleString('ar-EG') });
+            db.ref('threads').push({ user: name, content: txt, likes: 0, time: new Date().toLocaleString('ar-EG') });
             document.getElementById('postTxt').value = "";
             document.getElementById('anonCheck').checked = false;
         }
@@ -118,15 +121,19 @@
             let h = "";
             s.forEach((c) => {
                 let pid = c.key;
+                let data = c.val();
                 let coms = "";
-                if(c.val().comments) {
-                    Object.values(c.val().comments).forEach(cm => {
+                let likeCount = data.likes || 0;
+                
+                if(data.comments) {
+                    Object.values(data.comments).forEach(cm => {
                         coms += `<div class="comment-box"><b>${cm.user}:</b> ${cm.text}</div>`;
                     });
                 }
                 h = `<div class="post-card">
-                    <b>👤 ${c.val().user}</b>
-                    <p>${c.val().content}</p>
+                    <b>👤 ${data.user}</b>
+                    <p>${data.content}</p>
+                    <button class="like-btn" onclick="hitLike('${pid}')">❤️ ${likeCount}</button>
                     <div id="coms-${pid}">${coms}</div>
                     <div style="display:flex; gap:5px; margin-top:10px;">
                         <input type="text" id="in-${pid}" placeholder="رد..." style="margin:0; font-size:12px;">
@@ -136,6 +143,12 @@
             });
             document.getElementById('postsList').innerHTML = h;
         });
+
+        function hitLike(id) {
+            db.ref('threads/' + id + '/likes').transaction((curr) => {
+                return (curr || 0) + 1;
+            });
+        }
 
         function addCom(id) {
             let t = document.getElementById('in-'+id).value;
