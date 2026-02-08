@@ -1,202 +1,428 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+​<html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NonoSecret | عالم الأسرار 🔒</title>
-    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/noorabdelhalim77-rgb/NonoChat-/main/logo.png">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --p: #6c5ce7; --bg: #0f0c29; --card: rgba(255, 255, 255, 0.08); --bright: 100%; }
-        body { font-family: 'Cairo', sans-serif; background: var(--bg); color: white; margin: 0; transition: 0.3s; filter: brightness(var(--bright)); overflow-x: hidden; width: 100vw; }
-        .theme-green { --p: #2ecc71; --bg: #0a1f14; }
-        .theme-gold { --p: #f1c40f; --bg: #1c1c1c; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NonoSecret | Advanced Social Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+--primary: #6c5ce7;
+--secondary: #a29bfe;
+--accent: #00d2d3;
+--bg: #0a0a12;
+--glass: rgba(255, 255, 255, 0.05);
+--glass-border: rgba(255, 255, 255, 0.1);
+--text: #ffffff;
+--error: #ff7675;
+--success: #55efc4;
+--gold: #fdce4b;
+}
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); background-image: radial-gradient(circle at top right, #1e1e30, var(--bg)); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-        /* الهيدر واللوجو */
-        header { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; }
-        .logo-area { display: flex; align-items: center; gap: 10px; }
-        .logo-img { width: 35px; height: 35px; border-radius: 8px; border: 1px solid var(--p); }
+    /* Animations */
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideIn { from { right: -100%; } to { right: 0; } }
 
-        /* القائمة الجانبية المظبوطة */
-        .menu-btn { cursor: pointer; font-size: 24px; color: var(--p); }
-        .side-menu { position: fixed; top: 0; right: -300px; width: 280px; height: 100%; background: #161625; z-index: 2000; transition: 0.4s; padding: 25px; box-sizing: border-box; box-shadow: -10px 0 30px rgba(0,0,0,0.5); }
-        .side-menu.active { right: 0; }
-        .overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.75); z-index:1500; backdrop-filter: blur(4px); }
+    /* Layout */
+    .app-container { width: 100%; max-width: 500px; margin: 0 auto; padding: 20px; padding-bottom: 120px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; animation: fadeIn 0.5s ease; }
+    .logo-box { display: flex; align-items: center; gap: 10px; }
+    .logo-img { width: 50px; height: 50px; border-radius: 15px; background: linear-gradient(45deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; box-shadow: 0 0 20px var(--primary); }
 
-        /* الحاويات */
-        .container { max-width: 500px; margin: 20px auto; padding: 0 15px; box-sizing: border-box; }
-        .card { background: var(--card); backdrop-filter: blur(15px); border-radius: 25px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; box-sizing: border-box; width: 100%; }
-        
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: none; outline: none; background: #fff; color: #333; font-family: 'Cairo'; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border-radius: 12px; border: none; background: var(--p); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.98); }
+    /* Glassmorphism Components */
+    .glass-card { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); animation: fadeIn 0.6s ease; }
 
-        /* الاعترافات والتفاعلات */
-        .post { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 20px; margin-top: 15px; border-right: 5px solid var(--p); }
-        .bin-text { color: #00ff41; font-family: monospace; background: #000; padding: 10px; border-radius: 10px; font-size: 12px; word-break: break-all; }
-        .react-bar { display: flex; gap: 10px; margin-top: 12px; background: rgba(0,0,0,0.2); padding: 5px 12px; border-radius: 20px; width: fit-content; }
-        .react-item { cursor: pointer; font-size: 16px; transition: 0.2s; }
-        .react-item:hover { transform: scale(1.3); }
+    /* Menu */
+    .menu-trigger { width: 50px; height: 50px; border-radius: 50%; background: var(--glass); border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 24px; }
+    .side-menu { position: fixed; top: 0; right: -100%; width: 85%; height: 100%; background: rgba(10, 10, 18, 0.98); backdrop-filter: blur(30px); z-index: 10000; padding: 40px 20px; transition: 0.5s cubic-bezier(0.77,0.2,0.05,1.0); border-left: 1px solid var(--glass-border); }
+    .side-menu.active { right: 0; }
+    .menu-header { font-size: 24px; font-weight: 900; margin-bottom: 40px; color: var(--primary); }
+    .menu-item { display: flex; align-items: center; gap: 15px; padding: 18px; border-radius: 15px; margin-bottom: 10px; background: var(--glass); cursor: pointer; font-weight: 600; }
+    .menu-item:active { transform: scale(0.95); background: var(--primary); }
 
-        /* التعليقات */
-        .comments-area { margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; font-size: 13px; }
-        .comment { background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 10px; margin-bottom: 5px; }
+    /* Input Styles */
+    textarea, input { width: 100%; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--glass-border); border-radius: 15px; padding: 15px; color: white; margin-bottom: 15px; resize: none; font-size: 14px; outline: none; transition: 0.3s; }
+    textarea:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(108, 92, 231, 0.3); }
+    .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 16px; }
+    .btn-primary { background: linear-gradient(45deg, var(--primary), var(--secondary)); color: white; }
+    .btn-accent { background: linear-gradient(45deg, var(--accent), #00a8ff); color: white; }
 
-        .footer { text-align: center; padding: 30px 10px; font-size: 12px; color: #888; border-top: 1px solid rgba(255,255,255,0.05); }
-    </style>
+    /* Posts & Comments */
+    .post-author { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .author-avatar { width: 35px; height: 35px; border-radius: 10px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .author-name { font-weight: 700; font-size: 14px; color: var(--secondary); }
+    .post-content { font-size: 16px; line-height: 1.6; margin-bottom: 15px; color: #e0e0e0; word-break: break-all; }
+    .post-actions { display: flex; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--glass-border); padding-top: 15px; }
+    .react-badge { background: var(--glass); padding: 8px 12px; border-radius: 12px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; border: 1px solid transparent; }
+    .react-badge.active { border-color: var(--primary); background: rgba(108, 92, 231, 0.2); }
+    
+    .comment-section { margin-top: 20px; background: rgba(0,0,0,0.2); border-radius: 15px; padding: 15px; }
+    .comment-item { border-right: 2px solid var(--primary); padding: 5px 12px; margin-bottom: 12px; position: relative; }
+    .comment-text { font-size: 13px; color: #bbb; }
+    .comment-time { font-size: 10px; color: #666; display: block; margin-top: 2px; }
+
+    /* Saraha Specifics */
+    .tab-group { display: flex; gap: 10px; margin-bottom: 20px; }
+    .tab { flex: 1; padding: 10px; text-align: center; border-radius: 10px; background: var(--glass); font-size: 12px; cursor: pointer; }
+    .tab.active { background: var(--primary); font-weight: 700; }
+    .message-card { border-right: 4px solid var(--accent); position: relative; overflow: hidden; padding: 20px; margin-bottom: 15px; background: var(--glass); border-radius: 15px; }
+    .message-card.fav { border-right-color: var(--gold); background: rgba(253, 206, 75, 0.05); }
+    .star-btn { position: absolute; left: 15px; top: 15px; color: #555; cursor: pointer; font-size: 18px; }
+    .star-btn.active { color: var(--gold); }
+
+    /* Binary Styling */
+    .binary-preview { background: #000; color: #00ff00; font-family: monospace; font-size: 10px; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none; word-break: break-all; }
+    .toggle-row { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; font-size: 12px; color: #aaa; cursor: pointer; }
+    .toggle-row input { width: auto; margin: 0; }
+
+    /* Overlay */
+    #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index: 9999; display:none; }
+    .section-title { font-weight: 900; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: var(--accent); }
+    
+    /* Footer */
+    .footer-mandatory { margin-top: 50px; padding: 30px; border-top: 1px solid var(--glass-border); text-align: center; }
+    .footer-line-1 { font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 5px; }
+    .footer-line-2 { font-size: 12px; color: #888; letter-spacing: 1px; }
+
+    .delete-btn { color: var(--error); font-size: 11px; font-weight: bold; cursor: pointer; margin-right: auto; }
+</style>
 </head>
-<body id="mainBody">
+<body>
+  <div id="overlay" onclick="toggleMenu()"></div>
 
+<nav class="side-menu" id="sideMenu">
+    <div class="menu-header">الإعدادات ⚙️</div>
+    <div class="menu-item" onclick="changeTheme()">🎨 تغيير المظهر</div>
+    <div class="menu-item" onclick="toggleGlobalAnon()">🤐 وضع التخفي العالمي: <span id="anonStatus">مغلق</span></div>
+    <div class="menu-item" onclick="copyMyLink()">📋 نسخ رابط بروفيلي</div>
+    <div class="menu-item" onclick="logout()" style="color: var(--error);">🚪 تسجيل الخروج</div>
+</nav>
+
+<div class="app-container">
     <header>
-        <div class="logo-area">
-            <img src="https://raw.githubusercontent.com/noorabdelhalim77-rgb/NonoChat-/main/logo.png" class="logo-img">
-            <span style="font-weight: bold; font-size: 18px;">NonoSecret</span>
+        <div class="logo-box">
+            <div class="logo-img">N</div>
+            <div>
+                <h1 style="font-size: 18px; font-weight: 900;">NonoSecret</h1>
+                <p style="font-size: 10px; opacity: 0.6;">Advanced Anonymous Social v4.0</p>
+            </div>
         </div>
-        <div class="menu-btn" onclick="toggleMenu()">☰</div>
+        <div class="menu-trigger" onclick="toggleMenu()">☰</div>
     </header>
 
-    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
-    <div class="side-menu" id="sideMenu">
-        <h3 style="border-bottom: 1px solid #333; padding-bottom: 10px;">إعدادات نونو ⚙️</h3>
-        <label>ثيم الألوان:</label>
-        <div style="display:flex; gap:10px; margin:15px 0;">
-            <div onclick="setTheme('default')" style="width:30px; height:30px; background:#6c5ce7; border-radius:8px; cursor:pointer;"></div>
-            <div onclick="setTheme('green')" style="width:30px; height:30px; background:#2ecc71; border-radius:8px; cursor:pointer;"></div>
-            <div onclick="setTheme('gold')" style="width:30px; height:30px; background:#f1c40f; border-radius:8px; cursor:pointer;"></div>
+    <div class="glass-card">
+        <h2 class="section-title"><span>✍️</span> انشر فكرة</h2>
+        <textarea id="postInput" placeholder="ما الذي يدور في ذهنك؟" oninput="handleBinaryPreview()"></textarea>
+        
+        <div class="binary-preview" id="binaryPreview"></div>
+        
+        <div style="display: flex; flex-direction: column; gap: 5px;">
+            <label class="toggle-row">
+                <input type="checkbox" id="binaryToggle" onchange="handleBinaryPreview()"> تشفير النص إلى باينري (Binary) ⚙️
+            </label>
+            <label class="toggle-row">
+                <input type="checkbox" id="postAnonToggle"> نشر كـ مجهول الهوية 🤐
+            </label>
         </div>
-        <label>مستوى السطوع:</label>
-        <input type="range" min="40" max="130" value="100" style="width:100%" oninput="setBright(this.value)">
-        <hr style="opacity:0.1; margin:20px 0;">
-        <button onclick="share()" style="background:#25d366">نشر الرابط 📱</button>
+        
+        <button class="btn btn-primary" onclick="createPost()">نشر الآن 🚀</button>
     </div>
 
-    <div class="container">
-        <div class="card">
-            <h3 id="targetTxt">أرسل صراحة سرية 🔒</h3>
-            <textarea id="sMsg" placeholder="اكتب رسالتك هنا.. لن يعرف أحد هويتك"></textarea>
-            <button onclick="sendS()" style="background:#2ecc71;">إرسال صراحة 🚀</button>
+    <div class="glass-card">
+        <h2 class="section-title"><span>📩</span> صندوق الصراحة الخاص بك</h2>
+        <div id="sarahaSetup">
+            <input type="text" id="sarahaUsername" placeholder="اختر اسم مستخدم فريد">
+            <input type="password" id="sarahaPassword" placeholder="كلمة سر الصندوق">
+            <button class="btn btn-accent" onclick="generateSarahaLink()">إنشاء الرابط الخاص بي ✨</button>
         </div>
-
-        <div class="card" id="inboxCard" style="display:none;">
-            <h3>بريد الأسرار 📥 <span onclick="openInbox()" style="cursor:pointer; float:left;">👁️</span></h3>
-            <div id="inList" style="display:none; margin-top:15px;"></div>
-        </div>
-
-        <div class="card">
-            <h3>الاعترافات العامة ✨</h3>
-            <textarea id="cTxt" placeholder="بماذا تعترف اليوم؟"></textarea>
-            <div style="text-align:right; font-size:12px; margin-bottom:10px;">
-                <label><input type="checkbox" id="isBin"> تشفير باينري 🔢</label>
-            </div>
-            <button onclick="postC()">نشر الاعتراف 🌐</button>
-            <div id="pList"></div>
-        </div>
-
-        <div class="card" id="regArea">
-            <h3>أنشئ صندوقك الخاص ✨</h3>
-            <input type="text" id="uN" placeholder="اسمك">
-            <input type="password" id="uP" placeholder="كلمة السر">
-            <button onclick="reg()">تفعيل الرابط</button>
-            <div id="lBox" style="display:none; margin-top:15px; background:#fff; color:#333; padding:10px; border-radius:12px;">
-                <span id="theL" style="font-size:10px; word-break:break-all;"></span>
-            </div>
+        <div id="sarahaActive" style="display: none;">
+            <p style="font-size: 12px; margin-bottom: 10px; color: var(--success);">✅ الرابط الخاص بك جاهز!</p>
+            <div class="react-badge" style="width: 100%; justify-content: center; margin-bottom: 10px;" id="myLinkDisplay"></div>
+            <button class="btn btn-primary" onclick="openMyInbox()">فتح صندوق الوارد الخاص بي 🔐</button>
         </div>
     </div>
 
-    <div class="footer">
-        <p>جميع الحقوق محفوظة © 2026</p>
-        <p>تم التطوير والتصميم بواسطة <span style="color:var(--p); font-weight:bold;">المهندسة نور 👩‍🔧⚙️</span></p>
-        <p style="font-size:10px; opacity:0.6;">Mechatronics Engineering Student</p>
-    </div>
+    <div id="mainFeed"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFWvrDn9SVHga8KZEzgJomfzqwLXAwCdI",
-            authDomain: "nonosecretchat.firebaseapp.com",
-            projectId: "nonosecretchat",
-            databaseURL: "https://nonosecretchat-default-rtdb.firebaseio.com/",
-            appId: "1:829424619714:web:8069677332219804e3860d"
+    <footer class="footer-mandatory">
+        <div class="footer-line-1">تم التصميم والتطوير بواسطة المهندسة نور ⚙️</div>
+        <div class="footer-line-2">Mechatronics Engineer | Faculty of Engineering</div>
+    </footer>
+</div>
+
+<script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js)"></script>
+<script src="[https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js](https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js)"></script>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDFWvrDn9SVHga8KZEzgJomfzqwLXAwCdI",
+        authDomain: "nonosecretchat.firebaseapp.com",
+        projectId: "nonosecretchat",
+        databaseURL: "[https://nonosecretchat-default-rtdb.firebaseio.com/](https://nonosecretchat-default-rtdb.firebaseio.com/)",
+        appId: "1:829424619714:web:8069677332219804e3860d"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let currentUser = localStorage.getItem('ns_user') || 'User_' + Math.floor(Math.random() * 9000);
+    localStorage.setItem('ns_user', currentUser);
+    
+    let isAnonGlobal = localStorage.getItem('ns_anon') === 'true';
+    document.getElementById('anonStatus').innerText = isAnonGlobal ? 'مفعل' : 'مغلق';
+
+    function toggleMenu() {
+        const menu = document.getElementById('sideMenu');
+        const overlay = document.getElementById('overlay');
+        menu.classList.toggle('active');
+        overlay.style.display = menu.classList.contains('active') ? 'block' : 'none';
+    }
+
+    function changeTheme() {
+        const themes = ['#6c5ce7', '#00d2d3', '#e84393', '#f0932b', '#badc58', '#ff4757', '#2f3542'];
+        const random = themes[Math.floor(Math.random() * themes.length)];
+        document.documentElement.style.setProperty('--primary', random);
+    }
+
+    function toggleGlobalAnon() {
+        isAnonGlobal = !isAnonGlobal;
+        localStorage.setItem('ns_anon', isAnonGlobal);
+        document.getElementById('anonStatus').innerText = isAnonGlobal ? 'مفعل' : 'مغلق';
+    }
+
+    function textToBinary(text) {
+        return text.split('').map(char => char.charCodeAt(0).toString(2).padStart(8, '0')).join(' ');
+    }
+
+    function handleBinaryPreview() {
+        const text = document.getElementById('postInput').value;
+        const isBinary = document.getElementById('binaryToggle').checked;
+        const preview = document.getElementById('binaryPreview');
+        if (isBinary && text.trim()) {
+            preview.innerText = textToBinary(text);
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+
+    function createPost() {
+        const input = document.getElementById('postInput');
+        let text = input.value.trim();
+        if(!text) return;
+
+        const isBinary = document.getElementById('binaryToggle').checked;
+        const isPostAnon = document.getElementById('postAnonToggle').checked;
+
+        if (isBinary) text = textToBinary(text);
+
+        const postData = {
+            author: (isAnonGlobal || isPostAnon) ? 'مجهول' : currentUser,
+            content: text,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            reactions: { love: 0, laugh: 0, wow: 0, sad: 0, fire: 0 }
         };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        let u = new URLSearchParams(window.location.search).get('u');
 
-        function toggleMenu() { document.getElementById('sideMenu').classList.toggle('active'); document.getElementById('overlay').style.display = (document.getElementById('sideMenu').classList.contains('active')) ? 'block' : 'none'; }
-        function setTheme(t) { document.body.className = t === 'default' ? '' : 'theme-' + t; }
-        function setBright(v) { document.documentElement.style.setProperty('--bright', v + '%'); }
-        function toBin(t) { return t.split('').map(c => c.charCodeAt(0).toString(2).padStart(8,'0')).join(' '); }
+        db.ref('posts').push(postData);
+        input.value = '';
+        document.getElementById('binaryToggle').checked = false;
+        document.getElementById('postAnonToggle').checked = false;
+        handleBinaryPreview();
+    }
 
-        if(u) {
-            db.ref('users/'+u+'/name').once('value', s => { if(s.exists()) document.getElementById('targetTxt').innerText = "صارح " + s.val(); });
-            document.getElementById('inboxCard').style.display = 'block';
-        }
-
-        function sendS() {
-            let m = document.getElementById('sMsg').value; if(!m) return;
-            db.ref('users/'+u+'/saraha').push({ text: m, time: Date.now() });
-            alert("تم الإرسال بسرية! 🤫"); document.getElementById('sMsg').value = "";
-        }
-
-        function openInbox() {
-            let p = prompt("أدخل كلمة السر:");
-            db.ref('users/'+u+'/pass').once('value', s => {
-                if(s.val() === p) { document.getElementById('inList').style.display = 'block'; loadIn(); } else { alert("خطأ!"); }
+    function loadPosts() {
+        db.ref('posts').orderByChild('timestamp').on('value', snapshot => {
+            const feed = document.getElementById('mainFeed');
+            feed.innerHTML = '';
+            const data = [];
+            snapshot.forEach(child => {
+                data.push({ id: child.key, ...child.val() });
             });
-        }
 
-        function loadIn() {
-            db.ref('users/'+u+'/saraha').on('value', s => {
-                let h = ""; s.forEach(m => { h = `<div class="comment">${m.val().text}</div>` + h; });
-                document.getElementById('inList').innerHTML = h || "لا يوجد رسائل";
-            });
-        }
-
-        function postC() {
-            let t = document.getElementById('cTxt').value; let bin = document.getElementById('isBin').checked;
-            if(!t) return;
-            db.ref('conf').push({ text: bin ? toBin(t) : t, isBin: bin, reacts: {}, comments: {}, time: Date.now() });
-            document.getElementById('cTxt').value = "";
-        }
-
-        db.ref('conf').limitToLast(15).on('value', s => {
-            let h = "";
-            s.forEach(c => {
-                let d = c.val(); let cid = c.key;
-                let r = d.reacts || {};
-                let coms = "";
-                if(d.comments) Object.values(d.comments).forEach(cm => { coms += `<div class="comment"><b>مجهول:</b> ${cm.t}</div>`; });
-
-                h = `<div class="post">
-                    <div class="${d.isBin ? 'bin-text' : ''}">${d.text}</div>
-                    <div class="react-bar">
-                        <span class="react-item" onclick="react('${cid}','h')">❤️ ${Object.values(r).filter(x=>x=='h').length}</span>
-                        <span class="react-item" onclick="react('${cid}','f')">🔥 ${Object.values(r).filter(x=>x=='f').length}</span>
-                        <span class="react-item" onclick="react('${cid}','l')">😂 ${Object.values(r).filter(x=>x=='l').length}</span>
+            data.reverse().forEach(post => {
+                const postCard = document.createElement('div');
+                postCard.className = 'glass-card';
+                postCard.innerHTML = `
+                    <div class="post-author">
+                        <div class="author-avatar">${post.author === 'مجهول' ? '🤐' : '👤'}</div>
+                        <div class="author-name">${post.author}</div>
+                        ${post.author === currentUser ? `<span class="delete-btn" onclick="deletePost('${post.id}')">حذف المنشور</span>` : ''}
                     </div>
-                    <div class="comments-area">
-                        <div id="cl-${cid}">${coms}</div>
-                        <input type="text" id="ci-${cid}" placeholder="اكتب تعليقاً.." style="margin-bottom:0; font-size:11px; padding:8px;">
-                        <button onclick="addCom('${cid}')" style="padding:5px; margin-top:5px; font-size:11px;">تعليق</button>
+                    <div class="post-content">${post.content}</div>
+                    <div class="post-actions">
+                        ${renderReacts(post.id, post.reactions)}
                     </div>
-                </div>` + h;
+                    <div class="comment-section">
+                        <div id="commentList-${post.id}"></div>
+                        <div style="display:flex; gap:10px; margin-top:15px;">
+                            <input type="text" id="commInput-${post.id}" placeholder="تعليق..." style="margin:0;">
+                            <button class="btn btn-primary" style="width:auto; padding:0 20px;" onclick="addComment('${post.id}')">رد</button>
+                        </div>
+                    </div>
+                `;
+                feed.appendChild(postCard);
+                loadComments(post.id);
             });
-            document.getElementById('pList').innerHTML = h;
         });
+    }
 
-        function react(id, type) {
-            let rid = localStorage.getItem('rid') || Math.random().toString(36).substr(2,9);
-            localStorage.setItem('rid', rid);
-            db.ref('conf/'+id+'/reacts/'+rid).set(type);
+    function renderReacts(postId, reacts) {
+        const types = [
+            { key: 'love', emoji: '❤️' },
+            { key: 'laugh', emoji: '😂' },
+            { key: 'wow', emoji: '😮' },
+            { key: 'sad', emoji: '😢' },
+            { key: 'fire', emoji: '🔥' }
+        ];
+        return types.map(t => {
+            const active = localStorage.getItem(`react_${postId}`) === t.key ? 'active' : '';
+            return `<div class="react-badge ${active}" onclick="handleReact('${postId}', '${t.key}')">
+                        ${t.emoji} <span id="count-${postId}-${t.key}">${reacts[t.key] || 0}</span>
+                    </div>`;
+        }).join('');
+    }
+
+    function handleReact(postId, type) {
+        if(localStorage.getItem(`react_${postId}`)) return;
+        db.ref(`posts/${postId}/reactions/${type}`).transaction(c => (c || 0) + 1);
+        localStorage.setItem(`react_${postId}`, type);
+    }
+
+    function addComment(postId) {
+        const input = document.getElementById(`commInput-${postId}`);
+        if(!input.value.trim()) return;
+        db.ref(`comments/${postId}`).push({
+            author: isAnonGlobal ? 'مجهول' : currentUser,
+            text: input.value,
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
+        input.value = '';
+    }
+
+    function loadComments(postId) {
+        db.ref(`comments/${postId}`).on('value', snapshot => {
+            const list = document.getElementById(`commentList-${postId}`);
+            list.innerHTML = '';
+            snapshot.forEach(child => {
+                const c = child.val();
+                const div = document.createElement('div');
+                div.className = 'comment-item';
+                div.innerHTML = `
+                    <div style="font-weight:700; font-size:11px; color:var(--accent)">${c.author}</div>
+                    <div class="comment-text">${c.text}</div>
+                    <span class="comment-time">${new Date(c.timestamp).toLocaleString('ar-EG')}</span>
+                    ${c.author === currentUser ? `<span class="delete-btn" style="position:absolute; left:10px; top:10px;" onclick="deleteComment('${postId}', '${child.key}')">🗑️</span>` : ''}
+                `;
+                list.appendChild(div);
+            });
+        });
+    }
+
+    function generateSarahaLink() {
+        const user = document.getElementById('sarahaUsername').value.trim();
+        const pass = document.getElementById('sarahaPassword').value.trim();
+        if(!user || !pass) return alert('البيانات ناقصة');
+        db.ref(`saraha_users/${user}`).set({ owner: currentUser, password: pass }).then(() => {
+            localStorage.setItem('ns_saraha_user', user);
+            checkSarahaStatus();
+        });
+    }
+
+    function checkSarahaStatus() {
+        const activeUser = localStorage.getItem('ns_saraha_user');
+        if(activeUser) {
+            document.getElementById('sarahaSetup').style.display = 'none';
+            document.getElementById('sarahaActive').style.display = 'block';
+            const link = window.location.origin + window.location.pathname + '?inbox=' + activeUser;
+            document.getElementById('myLinkDisplay').innerText = link;
         }
+    }
 
-        function addCom(id) {
-            let t = document.getElementById('ci-'+id).value; if(!t) return;
-            db.ref('conf/'+id+'/comments').push({ t: t });
-            document.getElementById('ci-'+id).value = "";
+    function checkUrlParams() {
+        const inboxId = new URLSearchParams(window.location.search).get('inbox');
+        if(inboxId) {
+            const feed = document.getElementById('mainFeed');
+            feed.innerHTML = `
+                <div class="glass-card">
+                    <h2 class="section-title"><span>📬</span> إرسال صراحة إلى ${inboxId}</h2>
+                    <textarea id="sarahaMsg" placeholder="اكتب صراحتك هنا..."></textarea>
+                    <button class="btn btn-accent" onclick="sendSarahaMsg('${inboxId}')">إرسال مجهول 🤐</button>
+                </div>
+            `;
         }
+    }
 
-        function reg() {
-            let n = document.getElementById('u
+    function sendSarahaMsg(toUser) {
+        const text = document.getElementById('sarahaMsg').value;
+        if(!text.trim()) return;
+        db.ref(`saraha_inbox/${toUser}`).push({
+            content: text,
+            timestamp: firebase.database.ServerValue.TIMESTAMP,
+            star: false,
+            beauty: false
+        }).then(() => {
+            alert('تم الإرسال!');
+            window.location.href = window.location.pathname;
+        });
+    }
+
+    function openMyInbox() {
+        const user = localStorage.getItem('ns_saraha_user');
+        const pass = prompt('كلمة سر الصندوق:');
+        db.ref(`saraha_users/${user}`).once('value', snapshot => {
+            if(snapshot.val().password === pass) renderInbox(user);
+            else alert('خطأ');
+        });
+    }
+
+    function renderInbox(user) {
+        const feed = document.getElementById('mainFeed');
+        feed.innerHTML = `
+            <div class="glass-card">
+                <h2 class="section-title"><span>📥</span> رسايلك يا ${user}</h2>
+                <div class="tab-group">
+                    <div class="tab active" onclick="loadInboxMessages('${user}', 'normal')">الكل</div>
+                    <div class="tab" onclick="loadInboxMessages('${user}', 'star')">المميزة ⭐</div>
+                    <div class="tab" onclick="loadInboxMessages('${user}', 'beauty')">الأجمل ✨</div>
+                </div>
+                <div id="inboxContent"></div>
+            </div>
+        `;
+        loadInboxMessages(user, 'normal');
+    }
+
+    function loadInboxMessages(user, filter) {
+        db.ref(`saraha_inbox/${user}`).on('value', snapshot => {
+            const container = document.getElementById('inboxContent');
+            if(!container) return;
+            container.innerHTML = '';
+            snapshot.forEach(child => {
+                const m = child.val();
+                if(filter === 'star' && !m.star) return;
+                if(filter === 'beauty' && !m.beauty) return;
+                const card = document.createElement('div');
+                card.className = `message-card ${m.beauty ? 'fav' : ''}`;
+                card.innerHTML = `
+                    <div class="star-btn ${m.star ? 'active' : ''}" onclick="db.ref('saraha_inbox/${user}/${child.key}/star').set(${!m.star})">⭐</div>
+                    <div>${m.content}</div>
+                    <div style="font-size:10px; margin-top:10px; color:#555;">${new Date(m.timestamp).toLocaleString('ar-EG')}</div>
+                    <span style="font-size:10px; color:var(--accent);" onclick="db.ref('saraha_inbox/${user}/${child.key}/beauty').set(${!m.beauty})">${m.beauty ? 'إزالة من الأجمل' : 'تمييز كرسالة جميلة ✨'}</span>
+                `;
+                container.prepend(card);
+            });
+        });
+    }
+
+    function deletePost(id) { if(confirm('حذف؟')) db.ref(`posts/${id}`).remove(); }
+    function deleteComment(pid, cid) { if(confirm('حذف؟')) db.ref(`comments/${pid}/${cid}`).remove(); }
+    function logout() { localStorage.clear(); window.location.reload(); }
+    function copyMyLink() {
+        const link = document.getElementById('myLinkDisplay').innerText;
+        if(!link) return alert('لا يوجد رابط');
+        navigator.clipboard.writeText(link);
+        alert('تم النسخ');
+    }
+
+    window.onload = () => { loadPosts(); checkSarahaStatus(); checkUrlParams(); };
+</script>
