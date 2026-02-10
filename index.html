@@ -2,227 +2,383 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NonoSecret | النسخة المتكاملة 🚀</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nono Secret 2026 | Master Blue Edition</title>
+    
+    <!-- مكتبات التشغيل الأساسية -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Firebase Compat SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #ff4d4d; --accent: #00d2ff; --bg: #000000; }
-        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; padding-bottom: 100px; }
-        .hidden { display: none !important; }
-        .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 18px; margin: 15px; position: relative; }
-        
-        input, textarea { width: 100%; padding: 12px; background: #111; border: 1px solid #333; border-radius: 10px; color: #fff; margin-bottom: 10px; box-sizing: border-box; }
-        .btn { background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; cursor: pointer; }
-        
-        /* شريط التنقل */
-        .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #0a0a0a; border-top: 2px solid var(--primary); display: flex; justify-content: space-around; padding: 12px 0; z-index: 9999; }
-        .nav-item { color: #555; text-align: center; cursor: pointer; flex: 1; font-size: 11px; }
-        .nav-item.active { color: var(--primary); font-weight: bold; }
-        .nav-item svg { width: 22px; height: 22px; fill: currentColor; display: block; margin: 0 auto 4px; }
-
-        /* الريأكتات الأربعة */
-        .reacts-row { display: flex; gap: 8px; margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
-        .r-btn { cursor: pointer; padding: 5px 8px; border-radius: 10px; background: rgba(255,255,255,0.03); font-size: 14px; display: flex; align-items: center; gap: 4px; border: 1px solid transparent; }
-        .r-btn.active { border-color: var(--accent); background: rgba(0, 210, 255, 0.1); }
-        .r-count { font-size: 11px; color: #888; }
-
-        /* منطقة التعليق */
-        .com-area { display: flex; gap: 8px; margin-top: 12px; background: #151515; padding: 6px; border-radius: 12px; border: 1px solid var(--accent); }
-        .com-in { flex: 1; background: none !important; border: none !important; margin: 0 !important; padding: 5px !important; color: white; }
-        .com-btn { background: var(--primary); border: none; color: white; padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; }
-
-        /* تبويبات الصندوق */
-        .tabs { display: flex; justify-content: center; gap: 20px; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 10px; }
-        .tab-item { cursor: pointer; color: #666; font-size: 14px; }
-        .tab-item.active { color: var(--accent); border-bottom: 2px solid var(--accent); }
+        body { font-family: 'Cairo', sans-serif; background-color: #020617; color: white; margin: 0; padding: 0; overflow-x: hidden; }
+        .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.05); }
+        .blue-glow { box-shadow: 0 0 35px rgba(37, 99, 235, 0.25); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #2563eb; border-radius: 10px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-in { animation: fadeIn 0.4s ease-out forwards; }
     </style>
 </head>
 <body>
+    <div id="root"></div>
 
-    <div id="auth-box">
-        <div id="log-in" class="card">
-            <h2 style="text-align: center; color: var(--primary);">NonoSecret</h2>
-            <input type="text" id="user" placeholder="اسم المستخدم">
-            <input type="password" id="pass" placeholder="كلمة المرور">
-            <button class="btn" onclick="login()">دخول آمن 🔒</button>
-            <p style="text-align: center; font-size: 12px; margin-top: 15px;" onclick="toggleAuth(true)">ليس لديك حساب؟ <span style="color: var(--accent); cursor:pointer">إنشاء حساب</span></p>
-        </div>
-        <div id="sign-up" class="card hidden">
-            <h2 style="text-align: center; color: var(--accent);">NonoSecret</h2>
-            <input type="text" id="s-user" placeholder="اختاري اسم مستخدم">
-            <input type="password" id="s-pass" placeholder="اختاري كلمة مرور">
-            <button class="btn" onclick="signup()">إنشاء حساب جديد ✨</button>
-            <p style="text-align: center; font-size: 12px; margin-top: 15px;" onclick="toggleAuth(false)">عندك حساب؟ <span style="color: var(--primary); cursor:pointer">دخول</span></p>
-        </div>
-    </div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-    <div id="app" class="hidden">
-        <div id="p-home" class="page">
-            <div class="card">
-                <textarea id="p-txt" rows="3" placeholder="اكتبي ما في قلبك يا نور.."></textarea>
-                <div style="display: flex; gap: 15px; margin-bottom: 10px; font-size: 12px;">
-                    <label><input type="checkbox" id="c-bin"> تشفير Binary 🔢</label>
-                    <label><input type="checkbox" id="c-anon"> مجهول الهوية 👤</label>
+        // إعدادات Firebase الخاصة بنور
+        const firebaseConfig = {
+            apiKey: "AIzaSyCrxDoendh6BsN_fT90kKtRfEqoofVN-lU",
+            authDomain: "nono-secret.firebaseapp.com",
+            projectId: "nono-secret",
+            storageBucket: "nono-secret.firebasestorage.app",
+            messagingSenderId: "799477610655",
+            appId: "1:799477610655:web:560bcd9e813bfa57d90aaa"
+        };
+
+        const appId = "nono-secret-2026-master-blue";
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        function App() {
+            const [user, setUser] = useState(null);
+            const [loading, setLoading] = useState(true);
+            const [activeTab, setActiveTab] = useState('feed');
+            const [confessions, setConfessions] = useState([]);
+            const [privateMsgs, setPrivateMsgs] = useState([]);
+            const [newSecret, setNewSecret] = useState('');
+            const [chatInput, setChatInput] = useState('');
+            const [isAdminMode, setIsAdminMode] = useState(false);
+            const [commentInputs, setCommentInputs] = useState({});
+            const [activeCommentBox, setActiveCommentBox] = useState(null);
+            const [allUserRooms, setAllUserRooms] = useState([]);
+            const [selectedRoomId, setSelectedRoomId] = useState(null);
+            
+            const [isRegistering, setIsRegistering] = useState(false);
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [authError, setAuthError] = useState('');
+
+            const chatEndRef = useRef(null);
+
+            useEffect(() => {
+                const unsubscribe = auth.onAuthStateChanged((u) => {
+                    setUser(u);
+                    setLoading(false);
+                });
+                return unsubscribe;
+            }, []);
+
+            useEffect(() => {
+                if (!user) return;
+
+                // استماع للمنشورات العامة
+                const unsubFeed = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions')
+                    .onSnapshot(snap => {
+                        const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        setConfessions(docs.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+                    });
+
+                // استماع للروم (سواء الخاص بالمستخدم أو غرفة يراقبها الآدمن)
+                const roomToListen = (isAdminMode && selectedRoomId) ? selectedRoomId : user.uid;
+                const unsubRoom = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(roomToListen).collection('messages')
+                    .onSnapshot(snap => {
+                        const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        setPrivateMsgs(msgs.sort((a,b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)));
+                    });
+
+                // إذا كان وضع الإدارة مفعل، جلب كل الغرف
+                let unsubAdmin;
+                if (isAdminMode) {
+                    unsubAdmin = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms')
+                        .onSnapshot(snap => {
+                            const rooms = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                            setAllUserRooms(rooms.sort((a,b) => (b.lastUpdate?.seconds || 0) - (a.lastUpdate?.seconds || 0)));
+                        });
+                }
+
+                return () => { unsubFeed(); unsubRoom(); if(unsubAdmin) unsubAdmin(); };
+            }, [user, isAdminMode, selectedRoomId]);
+
+            useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [privateMsgs]);
+
+            const handleAuth = async (e) => {
+                e.preventDefault();
+                setAuthError('');
+                try {
+                    if (isRegistering) {
+                        await auth.createUserWithEmailAndPassword(email, password);
+                    } else {
+                        await auth.signInWithEmailAndPassword(email, password);
+                    }
+                } catch (err) {
+                    if (err.code === 'auth/weak-password') setAuthError('كلمة المرور يجب أن تكون 6 حروف على الأقل.');
+                    else if (err.code === 'auth/email-already-in-use') setAuthError('هذا البريد مستخدم بالفعل.');
+                    else setAuthError('خطأ في البيانات. تأكدي من تفعيل Email/Password في Firebase Console والضغط على Save.');
+                }
+            };
+
+            const publishPost = async () => {
+                if (!newSecret.trim()) return;
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions').add({
+                    text: newSecret,
+                    authorId: user.uid,
+                    likes: 0,
+                    likedBy: [],
+                    comments: [],
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                setNewSecret('');
+            };
+
+            const handleLike = async (post) => {
+                const postRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions').doc(post.id);
+                const isLiked = post.likedBy?.includes(user.uid);
+                await postRef.update({
+                    likedBy: isLiked ? firebase.firestore.FieldValue.arrayRemove(user.uid) : firebase.firestore.FieldValue.arrayUnion(user.uid),
+                    likes: isLiked ? (post.likes - 1) : (post.likes + 1)
+                });
+            };
+
+            const addComment = async (postId) => {
+                const text = commentInputs[postId];
+                if (!text?.trim()) return;
+                const postRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions').doc(postId);
+                await postRef.update({
+                    comments: firebase.firestore.FieldValue.arrayUnion({
+                        id: Date.now().toString(),
+                        userId: user.uid,
+                        text: text,
+                        createdAt: new Date().toISOString()
+                    })
+                });
+                setCommentInputs({ ...commentInputs, [postId]: '' });
+            };
+
+            const sendPrivateMsg = async () => {
+                if (!chatInput.trim()) return;
+                const targetRoom = (isAdminMode && selectedRoomId) ? selectedRoomId : user.uid;
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(targetRoom).collection('messages').add({
+                    text: chatInput,
+                    senderId: user.uid,
+                    isAdmin: isAdminMode,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(targetRoom).set({
+                    lastMsg: chatInput,
+                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+                    userId: targetRoom
+                }, { merge: true });
+                setChatInput('');
+            };
+
+            const CopyrightFooter = () => (
+                <div className="mt-auto py-12 text-center animate-in px-4">
+                    <div className="inline-block p-5 bg-slate-900/40 rounded-[2.2rem] border border-blue-500/10 backdrop-blur-md shadow-2xl">
+                        <p className="text-[10px] font-black tracking-[0.25em] text-blue-500 uppercase">Developed & Engineered by Noor</p>
+                        <p className="text-[9px] mt-2 font-bold text-gray-500 uppercase tracking-widest">Faculty of Engineering • Mechatronics Department</p>
+                    </div>
                 </div>
-                <button class="btn" onclick="createPost()">نشر في العام ✅</button>
-            </div>
-            <div id="feed"></div>
-        </div>
+            );
 
-        <div id="p-inbox" class="page hidden">
-            <div class="card" style="text-align: center;">
-                <h3 style="color: var(--accent);">صندوق صراحة 📥</h3>
-                <button class="btn" style="margin-bottom:10px" onclick="copyMyLink()">نسخ رابط صراحة الخاص بك 🔗</button>
-                <div class="tabs">
-                    <span class="tab-item active" id="t-all" onclick="switchInbox('all')">الوارد</span>
-                    <span class="tab-item" id="t-fav" onclick="switchInbox('fav')">المفضلة ⭐</span>
+            if (loading) return (
+                <div className="min-h-screen flex items-center justify-center bg-[#020617]">
+                    <div className="w-8 h-8 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
                 </div>
-            </div>
-            <div id="inbox-list"></div>
-        </div>
-    </div>
+            );
 
-    <nav id="navbar" class="nav-bar hidden">
-        <div class="nav-item active" id="nav-h" onclick="tab('home')">
-            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>الرئيسية
-        </div>
-        <div class="nav-item" id="nav-i" onclick="tab('inbox')">
-            <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>صراحة
-        </div>
-        <div class="nav-item" onclick="location.reload()">
-            <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>خروج
-        </div>
-    </nav>
+            if (!user) return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#020617]">
+                    <header className="mb-10 text-center animate-in">
+                        <div className="p-5 bg-blue-600 rounded-[2.5rem] inline-block shadow-2xl blue-glow mb-6">
+                            <svg width="45" height="45" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        </div>
+                        <h1 className="text-4xl font-black tracking-tighter uppercase">NONO <span className="text-blue-500">SECRET</span></h1>
+                        <p className="text-[10px] text-gray-600 uppercase font-black mt-3 tracking-[0.4em]">Master Edition 2026</p>
+                    </header>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, setDoc, doc, getDoc, updateDoc, deleteField, arrayUnion } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+                    <div className="w-full max-w-sm glass p-10 rounded-[3.5rem] shadow-2xl animate-in">
+                        <h2 className="text-xl font-black mb-8 text-center">{isRegistering ? 'إنشاء حساب جديد' : 'تسجيل الدخول'}</h2>
+                        <form onSubmit={handleAuth} className="space-y-5">
+                            <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-4 rounded-2xl bg-slate-950/50 border border-white/5 outline-none focus:border-blue-500/30 transition-all text-sm" required />
+                            <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-4 rounded-2xl bg-slate-950/50 border border-white/5 outline-none focus:border-blue-500/30 transition-all text-sm" required />
+                            {authError && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-[10px] text-center font-bold animate-in">{authError}</div>}
+                            <button type="submit" className="w-full py-5 bg-blue-600 text-white font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm blue-glow">
+                                {isRegistering ? 'انضمي الآن' : 'دخول الخزانة'}
+                            </button>
+                        </form>
+                        <button onClick={() => { setIsRegistering(!isRegistering); setAuthError(''); }} className="w-full mt-8 text-[11px] font-bold text-gray-500 hover:text-blue-400 transition-colors">
+                            {isRegistering ? 'لديكِ حساب؟ سجلي دخولكِ' : 'ليس لديكِ حساب؟ أنشئي حساباً جديداً'}
+                        </button>
+                    </div>
+                </div>
+            );
 
-        const firebaseConfig = { apiKey: "AIzaSyDFMW0n9SVHgsBKZErzgJomFzqmLXAwCdI", authDomain: "nonosecretchat.firebaseapp.com", projectId: "nonosecretchat", storageBucket: "nonosecretchat.firebasestorage.app", messagingSenderId: "829736694500", appId: "1:829736694500:web:56e9fcdd2458b9c81e72f1" };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        let me = "";
-        let currentInboxTab = "all";
+            return (
+                <div className="min-h-screen flex flex-col max-w-md mx-auto bg-[#020617] border-x border-white/5 relative">
+                    <header className="p-6 glass sticky top-0 z-50 flex justify-between items-center px-8 rounded-b-[2.8rem] border-b border-blue-500/10 shadow-2xl">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2.5 bg-blue-600 rounded-2xl text-white shadow-lg blue-glow">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            </div>
+                            <h1 className="text-sm font-black uppercase tracking-tight">Nono <span className="text-blue-500">Secret</span></h1>
+                        </div>
+                        {isAdminMode && <span className="text-[8px] bg-blue-500 text-white px-3 py-1 rounded-full font-black tracking-widest uppercase">Noor Admin</span>}
+                    </header>
 
-        window.toggleAuth = (s) => { document.getElementById('log-in').classList.toggle('hidden', s); document.getElementById('sign-up').classList.toggle('hidden', !s); };
+                    <main className="flex-grow p-4 pb-36 flex flex-col">
+                        {activeTab === 'feed' && (
+                            <div className="space-y-6 animate-in">
+                                <div className="glass p-7 rounded-[3rem] border border-white/10 shadow-2xl">
+                                    <textarea value={newSecret} onChange={e => setNewSecret(e.target.value)} placeholder="بماذا تفكرين مجهولاً؟" className="w-full bg-transparent outline-none min-h-[120px] text-sm resize-none placeholder-gray-700 leading-relaxed" />
+                                    <button onClick={publishPost} className="w-full mt-4 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl active:scale-95 transition-all text-sm uppercase tracking-widest">نشر مجهول ✨</button>
+                                </div>
 
-        window.signup = async () => {
-            const u = document.getElementById('s-user').value.trim(), p = document.getElementById('s-pass').value;
-            if(!u || !p) return;
-            const ref = doc(db, "users", u);
-            const snap = await getDoc(ref);
-            if(snap.exists()) return alert("الاسم محجوز!");
-            await setDoc(ref, { password: p });
-            alert("تم! سجلي دخولك."); toggleAuth(false);
-        };
+                                {confessions.map(post => (
+                                    <div key={post.id} className="glass rounded-[3rem] p-8 border border-white/5 animate-in shadow-xl">
+                                        <div className="flex justify-between items-center mb-5 text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em]">
+                                            <span>#Secret_{post.id.slice(-4)}</span>
+                                            <span>{post.createdAt?.toDate ? new Date(post.createdAt.toDate()).toLocaleTimeString('ar-EG') : 'الآن'}</span>
+                                        </div>
+                                        <p className="text-sm leading-8 text-gray-200 mb-8">{post.text}</p>
+                                        
+                                        <div className="flex items-center gap-10 pt-6 border-t border-white/5">
+                                            <button onClick={() => handleLike(post)} className={`flex items-center gap-2 transition-all ${post.likedBy?.includes(user.uid) ? 'text-blue-500 scale-125' : 'text-gray-500'}`}>
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill={post.likedBy?.includes(user.uid) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                                                <span className="text-xs font-black">{post.likes || 0}</span>
+                                            </button>
+                                            <button onClick={() => setActiveCommentBox(activeCommentBox === post.id ? null : post.id)} className={`flex items-center gap-2 transition-all ${activeCommentBox === post.id ? 'text-blue-400 scale-110' : 'text-gray-500'}`}>
+                                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                                                <span className="text-xs font-black">{post.comments?.length || 0}</span>
+                                            </button>
+                                        </div>
 
-        window.login = async () => {
-            const u = document.getElementById('user').value.trim(), p = document.getElementById('pass').value;
-            const snap = await getDoc(doc(db, "users", u));
-            if(snap.exists() && snap.data().password === p) {
-                me = u; document.getElementById('auth-box').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                document.getElementById('navbar').classList.remove('hidden');
-                loadFeed(); loadInbox();
-            } else alert("خطأ في البيانات!");
-        };
-
-        window.tab = (p) => {
-            document.querySelectorAll('.page').forEach(pg => pg.classList.add('hidden'));
-            document.getElementById('p-' + p).classList.remove('hidden');
-            document.querySelectorAll('.nav-item').forEach(ni => ni.classList.remove('active'));
-            document.getElementById('nav-' + p.charAt(0)).classList.add('active');
-        };
-
-        // النشر مع التشفير والمجهول
-        window.createPost = async () => {
-            const t = document.getElementById('p-txt').value, bin = document.getElementById('c-bin').checked, anon = document.getElementById('c-anon').checked;
-            if(!t.trim()) return;
-            let val = t;
-            if(bin) val = val.split('').map(c => c.charCodeAt(0).toString(2).padStart(8,'0')).join(' ');
-            await addDoc(collection(db, "posts"), { u: anon ? "مجهول" : me, t: val, re: {}, co: [], time: serverTimestamp() });
-            document.getElementById('p-txt').value = "";
-        };
-
-        function loadFeed() {
-            onSnapshot(query(collection(db, "posts"), orderBy("time", "desc")), (snap) => {
-                const f = document.getElementById('feed'); f.innerHTML = "";
-                snap.forEach(d => {
-                    const p = d.data(), rs = p.re || {}, myR = rs[me] || null;
-                    const counts = { '❤️':0, '😂':0, '😮':0, '😢':0 };
-                    Object.values(rs).forEach(v => { if(counts[v]!==undefined) counts[v]++; });
-
-                    f.innerHTML += `
-                        <div class="card">
-                            <small style="color:var(--accent)">@${p.u}</small><p>${p.t}</p>
-                            <div class="reacts-row">
-                                ${['❤️','😂','😮','😢'].map(e => `
-                                    <div class="r-btn ${myR===e?'active':''}" onclick="doRe('${d.id}','${e}','${myR}')">
-                                        ${e} <span class="r-count">${counts[e]}</span>
+                                        {activeCommentBox === post.id && (
+                                            <div className="mt-6 pt-6 border-t border-white/5 space-y-4">
+                                                <div className="flex gap-2">
+                                                    <input value={commentInputs[post.id] || ''} onChange={e => setCommentInputs({ ...commentInputs, [post.id]: e.target.value })} placeholder="أضيفي تعليقاً..." className="flex-grow bg-slate-900 rounded-full px-6 py-3 text-xs outline-none border border-white/5 focus:border-blue-500/20 transition-all" />
+                                                    <button onClick={() => addComment(post.id)} className="bg-blue-600 p-3 rounded-full text-white active:scale-90 shadow-xl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+                                                </div>
+                                                <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-3">
+                                                    {(post.comments || []).map(com => (
+                                                        <div key={com.id} className="bg-white/5 p-4 rounded-[2rem] text-[11px] text-gray-300 border border-white/5 leading-relaxed">{com.text}</div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                `).join('')}
+                                ))}
+                                <CopyrightFooter />
                             </div>
-                            <div class="com-area">
-                                <input type="text" id="in-${d.id}" class="com-in" placeholder="تعليق..">
-                                <button class="com-btn" onclick="addCo('${d.id}')">إرسال</button>
+                        )}
+
+                        {activeTab === 'private' && (
+                            <div className="flex flex-col flex-grow h-full animate-in">
+                                {isAdminMode && !selectedRoomId ? (
+                                    <div className="space-y-4 px-2">
+                                        <h3 className="text-blue-500 text-[10px] font-black mb-6 tracking-[0.3em] uppercase">Inbox Control:</h3>
+                                        {allUserRooms.map(room => (
+                                            <button key={room.id} onClick={() => setSelectedRoomId(room.id)} className="w-full glass p-6 rounded-[2.5rem] flex justify-between items-center border-l-4 border-blue-600 active:scale-95 transition-all shadow-xl">
+                                                <div className="text-right">
+                                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">User #{room.id.slice(0, 8)}</p>
+                                                    <p className="text-xs text-white truncate max-w-[200px] mt-2 font-medium">{room.lastMsg}</p>
+                                                </div>
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" className="text-blue-500"><path d="M9 18l6-6-6-6"/></svg>
+                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col flex-grow">
+                                        <div className="glass p-6 rounded-[2.8rem] mb-6 flex items-center justify-between border border-blue-500/10 shadow-2xl">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white text-xl shadow-lg blue-glow">N</div>
+                                                <div><h2 className="font-bold text-sm tracking-tight uppercase">روم نونو الخاصة</h2><p className="text-[9px] text-blue-500 font-black tracking-widest uppercase animate-pulse">Live Support</p></div>
+                                            </div>
+                                            {isAdminMode && <button onClick={() => setSelectedRoomId(null)} className="text-[10px] bg-white/10 px-5 py-2 rounded-full font-black text-blue-400 uppercase tracking-widest">Back</button>}
+                                        </div>
+                                        <div className="flex-grow glass rounded-[3rem] p-8 h-[45vh] overflow-y-auto custom-scrollbar space-y-6 shadow-inner">
+                                            {privateMsgs.map(m => (
+                                                <div key={m.id} className={`flex ${m.senderId === user.uid ? 'justify-end' : 'justify-start'}`}>
+                                                    <div className={`p-5 rounded-[2.2rem] text-xs max-w-[85%] leading-relaxed shadow-xl ${m.senderId === user.uid ? 'bg-blue-600 text-white font-bold rounded-tr-none' : 'bg-slate-900 text-gray-200 rounded-tl-none border border-white/5'}`}>
+                                                        {m.text}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            <div ref={chatEndRef} />
+                                        </div>
+                                        <div className="mt-6 relative">
+                                            <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && sendPrivateMsg()} placeholder="اكتبي رسالتكِ لنور..." className="w-full bg-slate-900/50 rounded-full py-6 pr-8 pl-16 outline-none border border-white/5 text-sm focus:border-blue-500/20 transition-all" />
+                                            <button onClick={sendPrivateMsg} className="absolute left-2 top-2 bg-blue-600 p-4 rounded-full text-white shadow-lg active:scale-90 transition-transform"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+                                        </div>
+                                    </div>
+                                )}
+                                <CopyrightFooter />
                             </div>
-                            <div style="font-size:11px; margin-top:10px; color:#aaa;">${(p.co || []).map(c => `<div><b>${c.u}:</b> ${c.t}</div>`).join('')}</div>
-                        </div>`;
-                });
-            });
+                        )}
+
+                        {activeTab === 'profile' && (
+                            <div className="text-center py-10 animate-in flex flex-col flex-grow items-center">
+                                <div className="w-40 h-40 bg-slate-900 rounded-[3.8rem] border-4 border-blue-500/10 p-2 mb-12 relative blue-glow">
+                                    <img src={`https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${user?.uid}`} className="w-full h-full rounded-[3.5rem]" />
+                                    <div className="absolute -bottom-2 -right-2 bg-blue-600 p-4 rounded-3xl border-4 border-[#020617] text-white shadow-2xl"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                                </div>
+                                <div className="w-full space-y-6 px-4">
+                                    <div className={`glass p-8 rounded-[3rem] border ${isAdminMode ? 'border-blue-500 shadow-2xl scale-105' : 'border-white/5'}`}>
+                                        <p className="text-[10px] text-blue-500 font-black uppercase tracking-[0.4em] mb-3">System Identity</p>
+                                        <h3 className="text-sm font-bold text-gray-500 tracking-widest leading-loose uppercase tracking-[0.1em]">Account Verified</h3>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="glass p-7 rounded-[2.5rem] shadow-xl">
+                                            <p className="text-[10px] text-gray-600 font-black uppercase mb-2">النشاط</p>
+                                            <p className="text-4xl font-black text-blue-500">{confessions.filter(c => c.authorId === user?.uid).length}</p>
+                                        </div>
+                                        <div className="glass p-7 rounded-[2.5rem] shadow-xl cursor-pointer" onClick={() => {
+                                            const code = prompt("أدخلي كود الإدارة يا نور:");
+                                            if (code === "NOOR2026") setIsAdminMode(!isAdminMode);
+                                        }}>
+                                            <p className="text-[10px] text-gray-600 font-black uppercase mb-2">لوحة التحكم</p>
+                                            <p className={`text-[12px] font-black uppercase mt-2 ${isAdminMode ? 'text-green-500 animate-pulse' : 'text-gray-500'}`}>{isAdminMode ? 'Authorized' : 'Locked'}</p>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => auth.signOut()} className="w-full py-6 glass text-red-500 font-bold rounded-[2rem] border-red-500/10 active:bg-red-500/5 transition-all text-[11px] uppercase tracking-[0.3em]">Logout System</button>
+                                </div>
+                                <CopyrightFooter />
+                            </div>
+                        )}
+                    </main>
+
+                    <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass border-t border-white/5 p-6 px-16 flex justify-between items-center z-50 rounded-t-[3.5rem] shadow-[0_-25px_60px_rgba(0,0,0,0.6)]">
+                        <button onClick={() => setActiveTab('feed')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'feed' ? 'text-blue-500 scale-125' : 'text-gray-600'}`}>
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                            <span className="text-[10px] font-black uppercase tracking-tighter">العامة</span>
+                        </button>
+                        <button onClick={() => setActiveTab('private')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'private' ? 'text-blue-500 scale-125' : 'text-gray-600'}`}>
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <span className="text-[10px] font-black uppercase tracking-tighter">الروم</span>
+                        </button>
+                        <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'profile' ? 'text-blue-500 scale-125' : 'text-gray-600'}`}>
+                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
+                            <span className="text-[10px] font-black uppercase tracking-tighter">أنا</span>
+                        </button>
+                    </nav>
+                </div>
+            );
         }
 
-        window.doRe = async (id, e, cur) => { await updateDoc(doc(db, "posts", id), { [`re.${me}`]: cur === e ? deleteField() : e }); };
-        window.addCo = async (id) => {
-            const el = document.getElementById(`in-${id}`); if(!el.value.trim()) return;
-            await updateDoc(doc(db, "posts", id), { co: arrayUnion({ u: me, t: el.value }) }); el.value = "";
-        };
-
-        // نظام صراحة المطور (وارد + مفضلة)
-        window.switchInbox = (t) => {
-            currentInboxTab = t;
-            document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
-            document.getElementById('t-' + t).classList.add('active');
-            loadInbox();
-        };
-
-        window.toggleFav = async (id, curFav) => {
-            await updateDoc(doc(db, "sarahah", id), { fav: !curFav });
-        };
-
-        function loadInbox() {
-            let q = query(collection(db, "sarahah"), where("to", "==", me), orderBy("time", "desc"));
-            if(currentInboxTab === "fav") q = query(collection(db, "sarahah"), where("to", "==", me), where("fav", "==", true));
-
-            onSnapshot(q, (snap) => {
-                const list = document.getElementById('inbox-list'); list.innerHTML = "";
-                snap.forEach(d => {
-                    const m = d.data();
-                    list.innerHTML += `
-                        <div class="card">
-                            <p>${m.text}</p>
-                            <div style="text-align:left; font-size:18px; cursor:pointer;" onclick="toggleFav('${d.id}', ${m.fav || false})">
-                                ${m.fav ? '⭐' : '☆'}
-                            </div>
-                        </div>`;
-                });
-            });
-        }
-
-        window.copyMyLink = () => {
-            const link = window.location.origin + window.location.pathname + "?user=" + me;
-            navigator.clipboard.writeText(link); alert("تم نسخ رابط صراحة بنجاح ✅");
-        };
-
-        // استلام رسائل صراحة من الرابط
-        const urlParams = new URLSearchParams(window.location.search);
-        const toUser = urlParams.get('user');
-        if(toUser) {
-            const msg = prompt("اكتبي رسالة صراحة لـ " + toUser);
-            if(msg) {
-                addDoc(collection(db, "sarahah"), { to: toUser, text: msg, fav: false, time: serverTimestamp() })
-                .then(() => { alert("تم إرسال رسالتك بنجاح!"); window.location.href = window.location.origin + window.location.pathname; });
-            }
-        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
