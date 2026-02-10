@@ -24,7 +24,15 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-in { animation: fadeIn 0.4s ease-out forwards; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .reaction-pop { animation: popScale 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        /* تحسين صندوق الإيموجي عشان ما يتقصش */
+        .reaction-pop { 
+            animation: popScale 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-width: 260px; /* ضمان مساحة كافية للإيموجيز */
+            display: flex;
+            justify-content: space-around;
+            left: 0 !important;
+        }
         @keyframes popScale { from { transform: scale(0.5) translateY(10px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
     </style>
 </head>
@@ -47,6 +55,22 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
+
+        // مكتبة صوت بسيطة
+        const playPopSound = () => {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        };
 
         const PostCard = memo(({ post, user, nicknames, onReaction, onEdit, onDelete, onOpenProfile, onAddComment, activeCommentBox, setActiveCommentBox }) => {
             const [localComment, setLocalComment] = useState('');
@@ -90,9 +114,9 @@
                             </button>
 
                             {showReactors && (
-                                <div className="absolute bottom-full left-0 mb-2 glass p-2 rounded-full flex gap-2 reaction-pop z-50 shadow-2xl border border-blue-500/20">
-                                    {['❤️', '🔥', '😮', '😢', '👍'].map(emoji => (
-                                        <button key={emoji} onClick={() => { onReaction(post, emoji); setShowReactors(false); }} className="text-2xl hover:scale-150 transition-transform p-1">
+                                <div className="absolute bottom-[110%] left-0 mb-4 glass p-3 rounded-full flex gap-3 reaction-pop z-50 shadow-2xl border border-blue-500/30">
+                                    {['❤️', '🔥', '😮', '😢', '👍', '😂'].map(emoji => (
+                                        <button key={emoji} onClick={() => { playPopSound(); onReaction(post, emoji); setShowReactors(false); }} className="text-2xl hover:scale-150 transition-transform p-1">
                                             {emoji}
                                         </button>
                                     ))}
@@ -101,7 +125,7 @@
                         </div>
 
                         <button onClick={() => setActiveCommentBox(activeCommentBox === post.id ? null : post.id)} className="mr-auto flex items-center gap-2 text-gray-500 px-4 py-2">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-7.6-4.7L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
                             <span className="text-xs font-black">{post.comments?.length || 0}</span>
                         </button>
                     </div>
