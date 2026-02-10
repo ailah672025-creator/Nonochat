@@ -30,7 +30,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useCallback, memo } = React;
 
         const firebaseConfig = {
             apiKey: "AIzaSyCrxDoendh6BsN_fT90kKtRfEqoofVN-lU",
@@ -46,6 +46,73 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // مكون منفصل للبوست لمنع إعادة الرندر غير الضروري وإصلاح مشكلة الكيبورد
+        const PostCard = memo(({ post, user, onReaction, onStartChat, onEdit, onDelete, onOpenProfile, onAddComment, activeCommentBox, setActiveCommentBox }) => {
+            const [localComment, setLocalComment] = useState('');
+
+            return (
+                <div className="glass rounded-[3rem] p-8 border border-white/5 animate-in shadow-xl relative mb-6">
+                    <div className="flex justify-between items-center mb-5">
+                        <div className="flex items-center gap-3">
+                            <button 
+                                onClick={() => onOpenProfile(post.authorId)}
+                                className="w-8 h-8 bg-blue-600/10 border border-blue-500/20 rounded-xl flex items-center justify-center text-blue-500 hover:bg-blue-600 hover:text-white transition-all shadow-lg"
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            </button>
+                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em]">#Secret_{post.id.slice(-4)}</span>
+                        </div>
+                        <div className="flex gap-2 text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em]">
+                            {post.authorId === user.uid && (
+                                <>
+                                    <button onClick={() => onEdit(post)} className="text-blue-400">تعديل</button>
+                                    <button onClick={() => onDelete(post.id)} className="text-red-400">مسح</button>
+                                </>
+                            )}
+                            <span>{post.createdAt?.toDate ? new Date(post.createdAt.toDate()).toLocaleTimeString('ar-EG') : 'الآن'}</span>
+                        </div>
+                    </div>
+                    <p className="text-sm leading-8 text-gray-200 mb-8">{post.text}</p>
+                    <div className="flex items-center gap-3 pt-6 border-t border-white/5 overflow-x-auto no-scrollbar">
+                        {['❤️', '🔥', '😮', '😢'].map(emoji => (
+                            <button key={emoji} onClick={() => onReaction(post, emoji)} 
+                                className={`flex items-center gap-1.5 p-2 rounded-2xl transition-all ${post.reactedBy?.[user.uid] === emoji ? 'bg-blue-600/20 border border-blue-500/30 scale-110' : 'bg-transparent'}`}>
+                                <span className="text-lg">{emoji}</span>
+                                <span className="text-[10px] font-black">{post.reactions?.[emoji] || 0}</span>
+                            </button>
+                        ))}
+                        <button onClick={() => setActiveCommentBox(activeCommentBox === post.id ? null : post.id)} className="mr-auto flex items-center gap-2 text-gray-500">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                            <span className="text-xs font-black">{post.comments?.length || 0}</span>
+                        </button>
+                    </div>
+                    {activeCommentBox === post.id && (
+                        <div className="mt-6 pt-6 border-t border-white/5 space-y-4">
+                            <div className="flex gap-2">
+                                <input 
+                                    value={localComment} 
+                                    onChange={e => setLocalComment(e.target.value)} 
+                                    placeholder="أضيفي تعليقاً..." 
+                                    className="flex-grow bg-slate-900 rounded-full px-6 py-3 text-xs outline-none border border-white/5 text-white" 
+                                />
+                                <button onClick={() => { onAddComment(post.id, localComment); setLocalComment(''); }} className="bg-blue-600 p-3 rounded-full text-white shadow-lg active:scale-90">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+                                </button>
+                            </div>
+                            <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-3">
+                                {(post.comments || []).map(com => (
+                                    <div key={com.id} className="bg-white/5 p-4 rounded-[2rem] text-[11px] text-gray-300 border border-white/5 flex justify-between items-center">
+                                        <span>{com.text}</span>
+                                        <button onClick={() => onOpenProfile(com.userId)} className="text-[8px] text-blue-500 font-bold uppercase tracking-tighter">البروفايل</button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        });
+
         function App() {
             const [user, setUser] = useState(null);
             const [loading, setLoading] = useState(true);
@@ -56,15 +123,14 @@
             const [newSecret, setNewSecret] = useState('');
             const [editingPost, setEditingPost] = useState(null);
             const [chatInput, setChatInput] = useState('');
-            const [isAdminMode, setIsAdminMode] = useState(false);
             const [activeCommentBox, setActiveCommentBox] = useState(null);
             const [allUserRooms, setAllUserRooms] = useState([]);
             const [selectedRoomId, setSelectedRoomId] = useState(null);
-            const [isRegistering, setIsRegistering] = useState(false);
             const [email, setEmail] = useState('');
             const [password, setPassword] = useState('');
             const [authError, setAuthError] = useState('');
-            const [viewingProfileId, setViewingProfileId] = useState(null); // جديد: لعرض بروفايل معين
+            const [isRegistering, setIsRegistering] = useState(false);
+            const [viewingProfileUid, setViewingProfileUid] = useState(null);
 
             const chatEndRef = useRef(null);
 
@@ -78,82 +144,93 @@
 
             useEffect(() => {
                 if (!user) return;
-
                 const unsubFeed = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions')
                     .onSnapshot(snap => {
                         const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         setConfessions(docs.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
                     });
-
                 const unsubNotifs = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('notifications')
                     .where('targetUserId', '==', user.uid)
                     .onSnapshot(snap => {
                         const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         setNotifications(docs.sort((a,b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
                     });
+                const unsubRooms = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms')
+                    .where('participants', 'array-contains', user.uid)
+                    .onSnapshot(snap => {
+                        const rooms = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        setAllUserRooms(rooms.sort((a,b) => (b.lastUpdate?.seconds || 0) - (a.lastUpdate?.seconds || 0)));
+                    });
+                return () => { unsubFeed(); unsubNotifs(); unsubRooms(); };
+            }, [user]);
 
-                const roomToListen = (isAdminMode && selectedRoomId) ? selectedRoomId : (selectedRoomId || user.uid);
-                const unsubRoom = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(roomToListen).collection('messages')
+            useEffect(() => {
+                if (!selectedRoomId || !user) return;
+                const unsubMsgs = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(selectedRoomId).collection('messages')
                     .onSnapshot(snap => {
                         const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                         setPrivateMsgs(msgs.sort((a,b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)));
+                        setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
                     });
+                return () => unsubMsgs();
+            }, [selectedRoomId, user]);
 
-                let unsubAdmin;
-                if (isAdminMode) {
-                    unsubAdmin = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms')
-                        .onSnapshot(snap => {
-                            const rooms = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                            setAllUserRooms(rooms.sort((a,b) => (b.lastUpdate?.seconds || 0) - (a.lastUpdate?.seconds || 0)));
-                        });
-                }
-
-                return () => { unsubFeed(); unsubNotifs(); unsubRoom(); if(unsubAdmin) unsubAdmin(); };
-            }, [user, isAdminMode, selectedRoomId]);
-
-            // تعديل: الإشعار يرسل مرة واحدة فقط لكل فعل
-            const createNotification = async (targetUserId, type, postText, actionId) => {
+            const startPrivateChat = (targetUserId) => {
                 if (targetUserId === user.uid) return;
-                
-                const notifRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('notifications');
-                const existing = await notifRef
-                    .where('targetUserId', '==', targetUserId)
-                    .where('fromUserId', '==', user.uid)
-                    .where('type', '==', type)
-                    .where('actionId', '==', actionId)
-                    .get();
-
-                if (existing.empty) {
-                    await notifRef.add({
-                        targetUserId,
-                        fromUserId: user.uid,
-                        type,
-                        actionId, // لضمان عدم التكرار لنفس الفعل
-                        postSnippet: postText.substring(0, 30) + "...",
-                        read: false,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                }
+                const roomId = [user.uid, targetUserId].sort().join('_');
+                setSelectedRoomId(roomId);
+                setViewingProfileUid(null);
+                setActiveTab('private');
             };
 
-            const handleAuth = async (e) => {
-                e.preventDefault();
-                setAuthError('');
-                try {
-                    if (isRegistering) await auth.createUserWithEmailAndPassword(email, password);
-                    else await auth.signInWithEmailAndPassword(email, password);
-                } catch (err) { setAuthError(err.message); }
+            const sendPrivateMsg = async () => {
+                if (!chatInput.trim() || !selectedRoomId) return;
+                const msgData = { text: chatInput, senderId: user.uid, createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(selectedRoomId).collection('messages').add(msgData);
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(selectedRoomId).set({
+                    participants: selectedRoomId.split('_'),
+                    lastMsg: chatInput,
+                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                setChatInput('');
+            };
+
+            const addComment = async (postId, text) => {
+                if (!text.trim()) return;
+                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions').doc(postId).update({
+                    comments: firebase.firestore.FieldValue.arrayUnion({
+                        id: Date.now().toString(),
+                        userId: user.uid,
+                        text: text,
+                        createdAt: new Date().toISOString()
+                    })
+                });
+            };
+
+            const handleReaction = async (post, emoji) => {
+                const postRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions').doc(post.id);
+                const currentReactedBy = post.reactedBy || {};
+                const userPrevReact = currentReactedBy[user.uid];
+                let newReactions = { ...post.reactions };
+                if (userPrevReact === emoji) {
+                    newReactions[emoji] = Math.max(0, (newReactions[emoji] || 0) - 1);
+                    delete currentReactedBy[user.uid];
+                } else {
+                    if (userPrevReact) newReactions[userPrevReact] = Math.max(0, (newReactions[userPrevReact] || 0) - 1);
+                    newReactions[emoji] = (newReactions[emoji] || 0) + 1;
+                    currentReactedBy[user.uid] = emoji;
+                }
+                await postRef.update({ reactions: newReactions, reactedBy: currentReactedBy });
             };
 
             const publishPost = async () => {
                 if (!newSecret.trim()) return;
+                const coll = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions');
                 if (editingPost) {
-                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions').doc(editingPost.id).update({
-                        text: newSecret
-                    });
+                    await coll.doc(editingPost.id).update({ text: newSecret });
                     setEditingPost(null);
                 } else {
-                    await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions').add({
+                    await coll.add({
                         text: newSecret,
                         authorId: user.uid,
                         reactions: { '❤️': 0, '🔥': 0, '😮': 0, '😢': 0 },
@@ -171,122 +248,12 @@
                 }
             };
 
-            const handleReaction = async (post, emoji) => {
-                const postRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions').doc(post.id);
-                const currentReactedBy = post.reactedBy || {};
-                const userPrevReact = currentReactedBy[user.uid];
-                let newReactions = { ...post.reactions };
-                
-                if (userPrevReact === emoji) {
-                    newReactions[emoji] = Math.max(0, (newReactions[emoji] || 0) - 1);
-                    delete currentReactedBy[user.uid];
-                } else {
-                    if (userPrevReact) newReactions[userPrevReact] = Math.max(0, (newReactions[userPrevReact] || 0) - 1);
-                    newReactions[emoji] = (newReactions[emoji] || 0) + 1;
-                    currentReactedBy[user.uid] = emoji;
-                    createNotification(post.authorId, 'تفاعل مع منشورك', post.text, `react_${post.id}`);
-                }
-                await postRef.update({ reactions: newReactions, reactedBy: currentReactedBy });
-            };
-
-            const addComment = async (postId, postAuthorId, postText, commentText) => {
-                if (!commentText?.trim()) return;
-                const postRef = db.collection('artifacts').doc(appId).collection('public').doc('data').collection('confessions').doc(postId);
-                await postRef.update({
-                    comments: firebase.firestore.FieldValue.arrayUnion({
-                        id: Date.now().toString(),
-                        userId: user.uid,
-                        text: commentText,
-                        createdAt: new Date().toISOString()
-                    })
-                });
-                createNotification(postAuthorId, 'علق على منشورك', postText, `comment_${Date.now()}`);
-            };
-
-            const sendPrivateMsg = async () => {
-                if (!chatInput.trim()) return;
-                const targetRoom = (isAdminMode && selectedRoomId) ? selectedRoomId : (selectedRoomId || user.uid);
-                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(targetRoom).collection('messages').add({
-                    text: chatInput, senderId: user.uid, isAdmin: isAdminMode, createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-                // تحديث بيانات الروم للظهور عند الأدمن
-                await db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(targetRoom).set({
-                    lastMsg: chatInput,
-                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-                setChatInput('');
-            };
-
             const CopyrightFooter = () => (
                 <div className="mt-auto py-12 text-center animate-in px-4">
                     <div className="inline-block p-5 bg-slate-900/40 rounded-[2.2rem] border border-blue-500/10 backdrop-blur-md shadow-2xl">
                         <p className="text-[10px] font-black tracking-[0.25em] text-blue-500 uppercase">Developed & Engineered by Noor</p>
                         <p className="text-[9px] mt-2 font-bold text-gray-500 uppercase tracking-widest">Faculty of Engineering • Mechatronics Department</p>
                     </div>
-                </div>
-            );
-
-            // مكون الكومنت الجديد لحل مشكلة الكيبورد
-            const CommentSection = ({ post }) => {
-                const inputRef = useRef();
-                return (
-                    <div className="mt-6 pt-6 border-t border-white/5 space-y-4">
-                        <div className="flex gap-2">
-                            <input 
-                                ref={inputRef}
-                                placeholder="أضيفي تعليقاً..." 
-                                className="flex-grow bg-slate-900 rounded-full px-6 py-3 text-xs outline-none border border-white/5" 
-                            />
-                            <button onClick={() => {
-                                addComment(post.id, post.authorId, post.text, inputRef.current.value);
-                                inputRef.current.value = '';
-                            }} className="bg-blue-600 p-3 rounded-full text-white">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-                            </button>
-                        </div>
-                        <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-3">
-                            {(post.comments || []).map(com => (
-                                <div key={com.id} className="bg-white/5 p-4 rounded-[2rem] text-[11px] text-gray-300 border border-white/5">{com.text}</div>
-                            ))}
-                        </div>
-                    </div>
-                );
-            };
-
-            const PostCard = ({ post }) => (
-                <div className="glass rounded-[3rem] p-8 border border-white/5 animate-in shadow-xl relative">
-                    <div className="flex justify-between items-center mb-5 text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em]">
-                        <div className="flex items-center gap-3">
-                            <span>#Secret_{post.id.slice(-4)}</span>
-                            {/* إضافة أيقونات البروفايل والرسائل */}
-                            <button onClick={() => { setViewingProfileId(post.authorId); setActiveTab('profile'); }} className="text-blue-500 hover:scale-110 transition-transform">👤 بروفايل</button>
-                            <button onClick={() => { setSelectedRoomId(post.authorId); setActiveTab('private'); }} className="text-pink-500 hover:scale-110 transition-transform">✉️ سرية</button>
-                        </div>
-                        <div className="flex gap-2">
-                            {post.authorId === user.uid && (
-                                <>
-                                    <button onClick={() => {setEditingPost(post); setNewSecret(post.text); window.scrollTo(0,0);}} className="text-blue-400">تعديل</button>
-                                    <button onClick={() => deletePost(post.id)} className="text-red-400">مسح</button>
-                                </>
-                            )}
-                            <span>{post.createdAt?.toDate ? new Date(post.createdAt.toDate()).toLocaleTimeString('ar-EG') : 'الآن'}</span>
-                        </div>
-                    </div>
-                    <p className="text-sm leading-8 text-gray-200 mb-8">{post.text}</p>
-                    <div className="flex items-center gap-3 pt-6 border-t border-white/5 overflow-x-auto no-scrollbar">
-                        {['❤️', '🔥', '😮', '😢'].map(emoji => (
-                            <button key={emoji} onClick={() => handleReaction(post, emoji)} 
-                                className={`flex items-center gap-1.5 p-2 rounded-2xl transition-all ${post.reactedBy?.[user.uid] === emoji ? 'bg-blue-600/20 border border-blue-500/30 scale-110' : 'bg-transparent'}`}>
-                                <span className="text-lg">{emoji}</span>
-                                <span className="text-[10px] font-black">{post.reactions?.[emoji] || 0}</span>
-                            </button>
-                        ))}
-                        <button onClick={() => setActiveCommentBox(activeCommentBox === post.id ? null : post.id)} className="mr-auto flex items-center gap-2 text-gray-500">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                            <span className="text-xs font-black">{post.comments?.length || 0}</span>
-                        </button>
-                    </div>
-                    {activeCommentBox === post.id && <CommentSection post={post} />}
                 </div>
             );
 
@@ -301,15 +268,15 @@
                         <h1 className="text-4xl font-black tracking-tighter uppercase">NONO <span className="text-blue-500">SECRET</span></h1>
                     </header>
                     <div className="w-full max-w-sm glass p-10 rounded-[3.5rem] shadow-2xl animate-in">
-                        <form onSubmit={handleAuth} className="space-y-5">
-                            <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-4 rounded-2xl bg-slate-950/50 border border-white/5 outline-none text-sm" required />
-                            <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-4 rounded-2xl bg-slate-950/50 border border-white/5 outline-none text-sm" required />
+                        <form onSubmit={e => { e.preventDefault(); isRegistering ? auth.createUserWithEmailAndPassword(email, password) : auth.signInWithEmailAndPassword(email, password); }} className="space-y-5">
+                            <input type="email" placeholder="البريد الإلكتروني" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-4 rounded-2xl bg-slate-950/50 border border-white/5 outline-none text-sm text-white" required />
+                            <input type="password" placeholder="كلمة المرور" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-4 rounded-2xl bg-slate-950/50 border border-white/5 outline-none text-sm text-white" required />
                             {authError && <div className="p-3 bg-red-500/10 text-red-400 text-[10px] text-center rounded-xl">{authError}</div>}
-                            <button type="submit" className="w-full py-5 bg-blue-600 text-white font-black rounded-2xl shadow-xl active:scale-95 text-sm blue-glow">
+                            <button type="submit" className="w-full py-5 bg-blue-600 text-white font-black rounded-2xl shadow-xl active:scale-95 text-sm blue-glow uppercase">
                                 {isRegistering ? 'انضمي الآن' : 'دخول الخزانة'}
                             </button>
                         </form>
-                        <button onClick={() => setIsRegistering(!isRegistering)} className="w-full mt-8 text-[11px] font-bold text-gray-500">
+                        <button onClick={() => setIsRegistering(!isRegistering)} className="w-full mt-8 text-[11px] font-bold text-gray-500 uppercase">
                             {isRegistering ? 'لديكِ حساب؟ سجلي دخولكِ' : 'ليس لديكِ حساب؟ أنشئي حساباً جديداً'}
                         </button>
                     </div>
@@ -318,6 +285,22 @@
 
             return (
                 <div className="min-h-screen flex flex-col max-w-md mx-auto bg-[#020617] border-x border-white/5 relative">
+                    {viewingProfileUid && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md animate-in">
+                            <div className="glass w-full max-w-xs rounded-[3.5rem] p-10 text-center border border-blue-500/20 shadow-2xl">
+                                <div className="w-24 h-24 bg-slate-900 rounded-[2.5rem] mx-auto mb-6 border-2 border-blue-500/20 p-1">
+                                     <img src={`https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${viewingProfileUid}`} className="rounded-[2rem]" />
+                                </div>
+                                <h3 className="text-sm font-black uppercase tracking-widest mb-1">Secret Profile</h3>
+                                <p className="text-[10px] text-gray-500 mb-8 font-bold uppercase tracking-tighter">ID: {viewingProfileUid.slice(0, 15)}...</p>
+                                <div className="space-y-3">
+                                    <button onClick={() => startPrivateChat(viewingProfileUid)} className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl text-xs uppercase tracking-widest active:scale-95">ارسال رسالة خاصة</button>
+                                    <button onClick={() => setViewingProfileUid(null)} className="w-full py-4 bg-white/5 text-gray-400 font-bold rounded-2xl text-xs uppercase active:scale-95">إغلاق</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <header className="p-6 glass sticky top-0 z-50 flex justify-between items-center px-8 rounded-b-[2.8rem] border-b border-blue-500/10 shadow-2xl">
                         <div className="flex items-center gap-3">
                             <div className="p-2.5 bg-blue-600 rounded-2xl text-white shadow-lg blue-glow">
@@ -335,20 +318,33 @@
                         {activeTab === 'feed' && (
                             <div className="space-y-6 animate-in">
                                 <div className="glass p-7 rounded-[3rem] border border-white/10 shadow-2xl">
-                                    <textarea value={newSecret} onChange={e => setNewSecret(e.target.value)} placeholder="بماذا تفكرين مجهولاً؟" className="w-full bg-transparent outline-none min-h-[100px] text-sm resize-none" />
+                                    <textarea value={newSecret} onChange={e => setNewSecret(e.target.value)} placeholder="بماذا تفكرين مجهولاً؟" className="w-full bg-transparent outline-none min-h-[100px] text-sm resize-none text-white" />
                                     <button onClick={publishPost} className="w-full mt-4 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl active:scale-95 text-sm uppercase">
                                         {editingPost ? 'حفظ التعديل ✨' : 'نشر مجهول ✨'}
                                     </button>
                                 </div>
-                                {confessions.map(post => <PostCard key={post.id} post={post} />)}
+                                {confessions.map(post => (
+                                    <PostCard 
+                                        key={post.id} 
+                                        post={post} 
+                                        user={user} 
+                                        onReaction={handleReaction}
+                                        onEdit={(p) => {setEditingPost(p); setNewSecret(p.text); window.scrollTo(0,0);}}
+                                        onDelete={deletePost}
+                                        onOpenProfile={setViewingProfileUid}
+                                        onAddComment={addComment}
+                                        activeCommentBox={activeCommentBox}
+                                        setActiveCommentBox={setActiveCommentBox}
+                                    />
+                                ))}
                                 <CopyrightFooter />
                             </div>
                         )}
 
                         {activeTab === 'notifications' && (
                             <div className="space-y-4 animate-in">
-                                <h2 className="text-xl font-black mb-6 px-4">الإشعارات</h2>
-                                {notifications.length === 0 ? <p className="text-center text-gray-500 text-sm mt-10">لا يوجد إشعارات بعد</p> : 
+                                <h2 className="text-xl font-black mb-6 px-4 uppercase tracking-tighter">الإشعارات</h2>
+                                {notifications.length === 0 ? <p className="text-center text-gray-500 text-sm mt-10 uppercase">لا يوجد إشعارات بعد</p> : 
                                 notifications.map(n => (
                                     <div key={n.id} className={`glass p-5 rounded-[2rem] border ${n.read ? 'opacity-60' : 'border-blue-500/30 shadow-lg'}`}>
                                         <p className="text-xs font-bold text-blue-400 mb-1">{n.type}</p>
@@ -362,32 +358,38 @@
                         {activeTab === 'profile' && (
                             <div className="space-y-8 animate-in">
                                 <div className="text-center py-6 flex flex-col items-center">
-                                    <button onClick={() => setViewingProfileId(null)} className="mb-4 text-[10px] text-gray-500 uppercase font-black tracking-widest">Back to Me</button>
                                     <div className="w-32 h-32 bg-slate-900 rounded-[3rem] border-4 border-blue-500/10 p-2 mb-6 blue-glow">
-                                        <img src={`https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${viewingProfileId || user?.uid}`} className="w-full h-full rounded-[2.5rem]" />
+                                        <img src={`https://api.dicebear.com/7.x/bottts-neutral/svg?seed=${user?.uid}`} className="w-full h-full rounded-[2.5rem]" />
                                     </div>
-                                    <h2 className="text-lg font-black uppercase tracking-widest">
-                                        {viewingProfileId ? `User_${viewingProfileId.slice(0,5)}` : user?.email.split('@')[0]}
-                                    </h2>
+                                    <h2 className="text-lg font-black uppercase tracking-widest">{user?.email.split('@')[0]}</h2>
                                     <p className="text-[10px] text-blue-500 font-bold mt-2 uppercase">Verified Member</p>
                                 </div>
                                 <div className="space-y-6">
-                                    <h3 className="text-xs font-black text-gray-500 uppercase px-4 tracking-[0.3em]">سجل الأسرار:</h3>
-                                    {confessions.filter(c => c.authorId === (viewingProfileId || user?.uid)).map(post => <PostCard key={post.id} post={post} />)}
+                                    <h3 className="text-xs font-black text-gray-500 uppercase px-4 tracking-[0.3em]">سجل أسرارك الخاصة:</h3>
+                                    {confessions.filter(c => c.authorId === user?.uid).map(post => (
+                                        <PostCard 
+                                            key={post.id} post={post} user={user} 
+                                            onReaction={handleReaction} onEdit={(p) => {setEditingPost(p); setNewSecret(p.text);}} 
+                                            onDelete={deletePost} onOpenProfile={setViewingProfileUid} onAddComment={addComment}
+                                            activeCommentBox={activeCommentBox} setActiveCommentBox={setActiveCommentBox}
+                                        />
+                                    ))}
                                 </div>
-                                {!viewingProfileId && <button onClick={() => auth.signOut()} className="w-full py-6 glass text-red-500 font-bold rounded-[2rem] border-red-500/10 text-[11px] uppercase tracking-[0.3em]">Logout System</button>}
+                                <button onClick={() => auth.signOut()} className="w-full py-6 glass text-red-500 font-bold rounded-[2rem] border-red-500/10 text-[11px] uppercase tracking-[0.3em]">Logout System</button>
                                 <CopyrightFooter />
                             </div>
                         )}
 
                         {activeTab === 'private' && (
                              <div className="flex flex-col flex-grow h-full animate-in">
-                                {isAdminMode && !selectedRoomId ? (
+                                {!selectedRoomId ? (
                                     <div className="space-y-4">
-                                        {allUserRooms.map(room => (
+                                        <h2 className="text-xl font-black mb-6 px-4 uppercase tracking-tighter">الرسائل السرية</h2>
+                                        {allUserRooms.length === 0 ? <p className="text-center text-gray-500 text-sm mt-10 italic uppercase">لا توجد محادثات سرية حالياً</p> : 
+                                        allUserRooms.map(room => (
                                             <button key={room.id} onClick={() => setSelectedRoomId(room.id)} className="w-full glass p-6 rounded-[2.5rem] flex justify-between items-center border-l-4 border-blue-600 active:scale-95 shadow-xl">
                                                 <div className="text-right">
-                                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">User #{room.id.slice(0, 8)}</p>
+                                                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-tighter">المعرف: {room.id.slice(0, 10)}...</p>
                                                     <p className="text-xs text-white truncate max-w-[200px] mt-2 font-medium">{room.lastMsg}</p>
                                                 </div>
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" className="text-blue-500"><path d="M9 18l6-6-6-6"/></svg>
@@ -395,26 +397,31 @@
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col flex-grow">
+                                    <div className="flex flex-col flex-grow h-full">
                                         <div className="glass p-6 rounded-[2.8rem] mb-6 flex items-center justify-between border border-blue-500/10 shadow-2xl">
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white text-xl shadow-lg blue-glow">N</div>
-                                                <div><h2 className="font-bold text-sm tracking-tight uppercase">روم نونو السرية</h2><p className="text-[9px] text-blue-500 font-black tracking-widest uppercase animate-pulse">Live Support</p></div>
+                                                <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center font-black text-white text-xl shadow-lg blue-glow">S</div>
+                                                <div><h2 className="font-bold text-xs tracking-tight uppercase">محادثة مشفرة</h2><p className="text-[9px] text-blue-500 font-black tracking-widest uppercase animate-pulse">End-to-End Secret</p></div>
                                             </div>
-                                            <button onClick={() => {setSelectedRoomId(null); if(isAdminMode) setAllUserRooms([]);}} className="text-[10px] bg-white/10 px-5 py-2 rounded-full font-black text-blue-400 uppercase tracking-widest">Back</button>
+                                            <button onClick={() => setSelectedRoomId(null)} className="text-[10px] bg-white/10 px-5 py-2 rounded-full font-black text-blue-400 uppercase tracking-widest">Back</button>
                                         </div>
                                         <div className="flex-grow glass rounded-[3rem] p-8 h-[45vh] overflow-y-auto custom-scrollbar space-y-6">
                                             {privateMsgs.map(m => (
-                                                <div key={m.id} className={`flex ${m.senderId === user.uid ? 'justify-end' : 'justify-start'}`}>
-                                                    <div className={`p-5 rounded-[2.2rem] text-xs max-w-[85%] leading-relaxed shadow-xl ${m.senderId === user.uid ? 'bg-blue-600 text-white font-bold rounded-tr-none' : 'bg-slate-900 text-gray-200 rounded-tl-none border border-white/5'}`}>
+                                                <div key={m.id} className={`flex ${m.senderId === user.uid ? 'justify-end' : 'justify-start'} group relative`}>
+                                                    <div className={`p-5 rounded-[2.2rem] text-xs max-w-[85%] leading-relaxed shadow-xl relative ${m.senderId === user.uid ? 'bg-blue-600 text-white font-bold rounded-tr-none' : 'bg-slate-900 text-gray-200 rounded-tl-none border border-white/5'}`}>
                                                         {m.text}
+                                                        {m.senderId === user.uid && (
+                                                            <button onClick={() => db.collection('artifacts').doc(appId).collection('public').doc('data').collection('rooms').doc(selectedRoomId).collection('messages').doc(m.id).delete()} className="absolute -top-2 -left-2 bg-red-500 p-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ))}
                                             <div ref={chatEndRef} />
                                         </div>
                                         <div className="mt-6 relative">
-                                            <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && sendPrivateMsg()} placeholder="اكتبي رسالتكِ..." className="w-full bg-slate-900/50 rounded-full py-6 pr-8 pl-16 outline-none border border-white/5 text-sm" />
+                                            <input value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && sendPrivateMsg()} placeholder="اكتبي رسالتكِ السرية..." className="w-full bg-slate-900/50 rounded-full py-6 pr-8 pl-16 outline-none border border-white/5 text-sm text-white" />
                                             <button onClick={sendPrivateMsg} className="absolute left-2 top-2 bg-blue-600 p-4 rounded-full text-white shadow-lg active:scale-90"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
                                         </div>
                                     </div>
@@ -425,22 +432,17 @@
                     </main>
 
                     <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass border-t border-white/5 p-6 px-8 flex justify-between items-center z-50 rounded-t-[3.5rem] shadow-[0_-25px_60px_rgba(0,0,0,0.6)]">
-                        <button onClick={() => {setActiveTab('feed'); setViewingProfileId(null);}} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'feed' ? 'text-blue-500 scale-125' : 'text-gray-600'}`}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
-                            <span className="text-[8px] font-black uppercase">العامة</span>
-                        </button>
-                        <button onClick={() => {setActiveTab('private'); setSelectedRoomId(null);}} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'private' ? 'text-blue-500 scale-125' : 'text-gray-600'}`}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                            <span className="text-[8px] font-black uppercase">الروم</span>
-                        </button>
-                        <button onClick={() => setActiveTab('notifications')} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'notifications' ? 'text-blue-500 scale-125' : 'text-gray-600'}`}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path></svg>
-                            <span className="text-[8px] font-black uppercase">إشعارات</span>
-                        </button>
-                        <button onClick={() => {setActiveTab('profile'); setViewingProfileId(null);}} className={`flex flex-col items-center gap-2 transition-all ${activeTab === 'profile' ? 'text-blue-500 scale-125' : 'text-gray-600'}`}>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></svg>
-                            <span className="text-[8px] font-black uppercase">أنا</span>
-                        </button>
+                        {['feed', 'private', 'notifications', 'profile'].map(tab => (
+                            <button key={tab} onClick={() => { setActiveTab(tab); if(tab === 'private') setSelectedRoomId(null); }} className={`flex flex-col items-center gap-2 transition-all ${activeTab === tab ? 'text-blue-500 scale-125' : 'text-gray-600'}`}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    {tab === 'feed' && <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>}
+                                    {tab === 'private' && <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>}
+                                    {tab === 'notifications' && <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>}
+                                    {tab === 'profile' && <><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/></>}
+                                </svg>
+                                <span className="text-[8px] font-black uppercase">{tab === 'feed' ? 'العامة' : tab === 'private' ? 'الروم' : tab === 'notifications' ? 'إشعارات' : 'أنا'}</span>
+                            </button>
+                        ))}
                     </nav>
                 </div>
             );
